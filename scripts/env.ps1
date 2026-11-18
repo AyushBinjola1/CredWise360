@@ -26,4 +26,5 @@ if (-not $env:CREDWISE_PG_PORT) { $env:CREDWISE_PG_PORT = '55432' }
 $env:PGPORT = $env:CREDWISE_PG_PORT
 $env:PGDATABASE = 'credwise'
 $env:PGUSER = 'credwise'
+$env:DEMO_MODE = '1'
 $env:DATABASE_URL = "postgresql://credwise@127.0.0.1:$($env:PGPORT)/credwise"

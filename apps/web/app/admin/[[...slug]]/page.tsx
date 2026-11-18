@@ -1,0 +1,1 @@
+import {GuardedPage} from '@/components/guarded-page';export const dynamic='force-dynamic';export const metadata={title:'Operations workspace'};export default async function Page({params}:{params:Promise<{slug?:string[]}>}){return <GuardedPage role="admin" parts={(await params).slug||[]}/>;}

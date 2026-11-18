@@ -1,0 +1,25 @@
+# Academic guide and viva notes
+
+## Follow one request
+
+A browser form submits a same-origin request to the Next.js API handler. The handler forwards it to the C++ HTTP server. A controller checks the session and delegates to a service. The service loads a domain object, applies its rules, and persists the result through libpq. The browser displays the returned result.
+
+## Concept map
+
+| Concept | Source | Example to demonstrate |
+| --- | --- | --- |
+| Interface, abstraction and runtime dispatch | `services/core/repositories/database.hpp`, `Repository` and `Database` | A repository exposes parameterized reads and writes while the adapter owns the PostgreSQL connection and result handles. |
+| Resource acquisition is initialization (RAII) | `Database` and `Transaction` in the same header | Connection and result objects release libpq resources. An uncommitted transaction rolls back as its scope ends. |
+| Encapsulation and composition | `services/core/domain/profile.hpp`, `FinancialProfile` | Validated named inputs are encapsulated with their derived financial metrics. |
+| Copy and move semantics | `FinancialProfile::adjusted` and the profile constructors | Applying changes returns a separate value. A simulation can use that value without replacing the original profile. |
+| Standard collections and sorting | `services/core/repositories/database.cpp`, `migrate` | A vector holds migration paths. Sorting applies revisions deterministically in O(n log n) time. |
+| Exception handling | `services/core/common.hpp`, `Error`, and `services/core/main.cpp` | Validation exceptions become HTTP errors. Database handles still release correctly when an exception unwinds the stack. |
+| Concurrency and shutdown | `services/core/main.cpp` | HTTP requests run in a bounded worker pool. A signal-aware monitor stops the listener. Each database request owns its connection. |
+
+## Questions for the viva
+
+1. **Why use integer paise?** Repeated binary floating-point updates can accumulate error in a ledger. Integer amounts represent each posted payment exactly. Calculations must document where interest is rounded.
+2. **Why use database transactions with a multithreaded service?** A mutex protects one process. Transactions and row locks also coordinate other connections and protect changes across crashes.
+3. **How do UI guards and server authorization work together?** Role-appropriate navigation guides the user. Each protected API operation independently checks the session and permitted owner.
+4. **How does a simulated score differ from a bureau score?** The project applies its documented deterministic education policy to synthetic inputs. There is no bureau connection or trained model.
+5. **How do you reproduce a result?** Use the migrations and synthetic fixture, record the inputs, and run the same calculation through both a native test and the integrated API.

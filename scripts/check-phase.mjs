@@ -38,6 +38,8 @@ try{
  run('cmake',['-S','.','-B','build','-G','Ninja']);
  run('cmake',['--build','build','--parallel','3']);
  run('ctest',['--test-dir','build','--output-on-failure']);
+ run('psql',[env.DATABASE_URL,'-v','ON_ERROR_STOP=1','-c','CREATE SCHEMA IF NOT EXISTS credwise_verification']);
+ env.PGOPTIONS='-c search_path=credwise_verification,pg_catalog';
  run(core,['--migrate']);run(core,['--migrate']);
  const native=start('core',core,[]);await ready(native,env.CORE_URL+'/api/health');
  run(process.execPath,[next,'build','--webpack'],resolve('apps/web'));

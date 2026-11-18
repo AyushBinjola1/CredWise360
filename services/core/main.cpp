@@ -1,5 +1,6 @@
 #include "httplib.h"
 #include "controllers/api.hpp"
+#include "services/identity.hpp"
 #include <atomic>
 #include <csignal>
 #include <iostream>
@@ -27,7 +28,7 @@ int main(int argc,char** argv) {
     try {
         if (setting("DATABASE_URL").empty()) throw std::runtime_error("Set DATABASE_URL before starting CredWise.");
         auto databaseRoot=std::filesystem::path(setting("CREDWISE_DB_DIR","database"));
-        { Database db; migrate(db,databaseRoot); }
+        { Database db; migrate(db,databaseRoot); if (setting("DEMO_MODE")=="1") seedIdentity(db); }
         if (argc>1 && std::string(argv[1])=="--migrate") return 0;
         httplib::Server server;
         server.new_task_queue=[] {return new httplib::ThreadPool(8);};

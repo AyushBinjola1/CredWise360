@@ -1,0 +1,2 @@
+import Link from 'next/link';import {Brand} from './brand';
+export function PublicFooter(){return <footer className="sitefooter"><div className="wrap"><div><Brand/><p>Borrow wisely. Build credit. Achieve financial freedom.</p></div><nav aria-label="Footer navigation">{[['About','about'],['How it works','how-it-works'],['Features','features'],['Resources','resources'],['FAQ','faq'],['Privacy','privacy'],['Terms','terms'],['Simulation disclaimer','simulation']].map(([name,path])=><Link href={'/'+path} key={path}>{name}</Link>)}</nav></div></footer>;}

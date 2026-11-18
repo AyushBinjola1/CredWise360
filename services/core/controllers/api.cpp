@@ -1,4 +1,5 @@
 #include "controllers/api.hpp"
+#include "services/identity.hpp"
 namespace cw {
 Response dispatch(Database& db, const Request& request) {
     if (request.path == std::vector<std::string>{"health"} && request.method == "GET") {
@@ -7,6 +8,7 @@ Response dispatch(Database& db, const Request& request) {
         status["storage"] = "PostgreSQL";
         return {status};
     }
+    if (auto response=identityRoutes(db,request)) return *response;
     throw Error(404,"not_found","No matching API route.");
 }
 }

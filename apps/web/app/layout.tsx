@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import '@fontsource-variable/geist';
 import './globals.css';
+import './workspace.css';
+import './public-extra.css';
 import {Providers} from '@/components/providers';
 export const metadata: Metadata={title:{default:'CredWise 360 | Borrow with clarity',template:'%s | CredWise 360'},description:'A responsible lending studio for exploring credit, comparing loans and planning a debt-free future with synthetic financial data.'};
 export default function RootLayout({children}:{children:React.ReactNode}) {

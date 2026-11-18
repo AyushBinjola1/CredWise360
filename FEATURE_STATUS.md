@@ -4,9 +4,9 @@ A checked row requires an executed functional check. Partial coverage is recorde
 
 | Brief | Feature family | Status | Verification evidence |
 | --- | --- | --- | --- |
-| 1–5 | Local infrastructure, architecture, branding, theme, API and design system | In progress | |
-| 6 | Public pages and role-specific customer and administrator navigation | Pending | |
-| 7–9 | Identity, sessions, recovery, simulated KYC, profile and cash flow | Pending | |
+| 1–5 | Local infrastructure, architecture, branding, theme, API and design system | Native/web path verified; container execution pending | Phase 1 log below |
+| 6 | Public pages and role-specific customer and administrator navigation | In progress | Public information pages, sign-in, role guard and workspace navigation exercised in phase 2 |
+| 7–9 | Identity, sessions, recovery, simulated KYC, profile and cash flow | Core journeys verified | API readbacks, KYC rejection/resubmission and two browser profiles in phase 2 |
 | 10, 12 | Scoring, risk, alternative evidence and policy history | Pending | |
 | 11 | Digital twin, presets, comparison and saved scenarios | Pending | |
 | 13–16 | Eight loan products, recommendations, affordability, amortization and comparison | Pending | |
@@ -28,3 +28,7 @@ Record the tested behavior and the command here. A source file or planned test a
 ### Phase 1
 
 Verified on Windows using node scripts/check-phase.mjs. GCC 16.2 compiled the C++20 API, CTest passed 1/1, the Next.js production build succeeded, the real API passed its integration test through the Next.js origin, and Chromium passed the landing, image, theme persistence and overflow test at all six requested widths. PostgreSQL 18.7 retained one initialization across three migration passes. Docker Compose and hosted CI are supplied but have not been executed here.
+
+### Phase 2
+
+The production Next.js and GCC builds passed, CTest passed 1/1, 2 API integration tests passed, and 4 Chromium tests passed. Browser journeys verified registration, profile persistence and ₹37,500 disposable income after sign-out/sign-in at 390px and 1440px. API checks verified actual uploaded document bytes, admin rejection and resubmission, settings, password recovery, session invalidation, account deactivation/reactivation and borrower authorization. Eight public information routes and the six-width landing-page check passed.

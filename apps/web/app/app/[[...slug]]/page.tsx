@@ -1,0 +1,1 @@
+import {GuardedPage} from '@/components/guarded-page';export const dynamic='force-dynamic';export const metadata={title:'Borrower workspace'};export default async function Page({params}:{params:Promise<{slug?:string[]}>}){return <GuardedPage role="customer" parts={(await params).slug||[]}/>;}
