@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -27,7 +27,7 @@ const sections: ProfileSection[] = [
     { key: 'salary', label: 'Monthly salary', unit: 'money' },
     { key: 'business_income', label: 'Business or freelance income', unit: 'money' },
     { key: 'other_income', label: 'Other monthly income', unit: 'money' },
-    { key: 'income_regularity', label: 'Income regularity', unit: 'percent', hint: 'How often does your expected income arrive?' },
+    { key: 'income_regularity', label: 'Income regularity', unit: 'percent', hint: 'Enter the percentage of expected payments received. Leave blank if unknown.' },
   ] },
   { id: 'budget', name: 'Monthly budget', icon: Wallet, description: 'Record recurring expenses, savings and existing monthly instalments.', fields: [
     { key: 'essential', label: 'Essential expenses', unit: 'money', hint: 'Housing, food, transport and other necessities.' },
@@ -48,8 +48,10 @@ const sections: ProfileSection[] = [
     { key: 'utilization', label: 'Credit utilisation', unit: 'percent' },
     { key: 'on_time', label: 'On-time repayments', unit: 'count' },
     { key: 'missed', label: 'Missed repayments', unit: 'count' },
-    { key: 'rent', label: 'Rent payments made on time', unit: 'percent' },
-    { key: 'utilities', label: 'Utility bills paid on time', unit: 'percent' },
+    { key: 'rent', label: 'Rent payments made on time', unit: 'percent', hint: 'Leave blank when no record is available.' },
+    { key: 'utilities', label: 'Utility bills paid on time', unit: 'percent', hint: 'Leave blank when no record is available.' },
+    { key: 'savings_reported', label: 'Include my declared monthly savings', unit: 'consent', hint: 'Clear to withdraw this amount as scoring evidence.' },
+    { key: 'emi_reported', label: 'Include my declared instalments', unit: 'consent', hint: 'A reported zero records that you currently have no monthly instalments.' },
     { key: 'consent', label: 'Use my synthetic alternative evidence', unit: 'consent', hint: 'Allow rent and utility history to contribute to alternative credit assessment.' },
   ] },
 ];
@@ -91,23 +93,29 @@ function CashFlow({ profile, metrics }: ProfileResult) {
   </section>;
 }
 
+const optionalEvidence = new Set<keyof Profile>(['rent','utilities','income_regularity']);
+
 function ProfileEditor({ profile, section, onSaved }: { profile: Profile; section: ProfileSection; onSaved: (result: ProfileResult) => void }) {
   type Values = Record<string, string | boolean>;
   const defaults = Object.fromEntries(section.fields.map(field => [field.key,
     field.unit === 'money' ? monetaryInput(profile[field.key] as number)
-      : field.unit === 'consent' ? profile.consent : String(profile[field.key] ?? '')])) as Values;
+      : field.unit === 'consent' ? Boolean(profile[field.key]) : String(profile[field.key] ?? '')])) as Values;
   const form = useForm<Values>({ defaultValues: defaults });
   const [feedback, setFeedback] = useState('');
+  useEffect(() => { if (!form.formState.isDirty) form.reset(defaults); }, [profile]);
   const update = useMutation({
     mutationFn: async (values: Values) => {
-      const patch: Record<string, number | string | boolean> = {};
+      const patch: Record<string, number | string | boolean | null> = {};
       for (const field of section.fields) {
+        const state = form.getFieldState(field.key, form.formState);
+        if (!state.isDirty && !state.isTouched) continue;
         const input = String(values[field.key] ?? '').trim();
         if (field.unit === 'money') patch[field.key] = parsePaise(input);
         else if (field.unit === 'text') patch[field.key] = input;
         else if (field.unit === 'consent') patch[field.key] = Boolean(values[field.key]);
-        else patch[field.key] = Number(input);
+        else patch[field.key] = optionalEvidence.has(field.key) && input === '' ? null : Number(input);
       }
+      if (!Object.keys(patch).length) throw Error('Edit a field before saving.');
       return api<ProfileResult>('profile', patch, 'PUT');
     },
     onSuccess(result, values) {
@@ -131,7 +139,7 @@ function ProfileEditor({ profile, section, onSaved }: { profile: Profile; sectio
       return <div className="identity-field" key={id}><label htmlFor={id}>{field.label}</label>
         <div className="identity-control">{field.unit === 'money' && <span aria-hidden="true">₹</span>}
           <input id={id} type={numeric ? 'number' : 'text'} inputMode={field.unit === 'money' ? 'decimal' : numeric ? 'numeric' : 'text'}
-            aria-describedby={hintId} required={field.key !== 'goal'} min={numeric ? 0 : undefined} max={numeric ? maximum : undefined}
+            aria-describedby={hintId} required={field.key !== 'goal' && !optionalEvidence.has(field.key)} min={numeric ? 0 : undefined} max={numeric ? maximum : undefined}
             step={field.unit === 'money' ? '0.01' : numeric ? 1 : undefined}
             maxLength={field.unit === 'text' ? field.key === 'goal' ? 240 : 80 : undefined} {...form.register(field.key)}/>
           {suffix && <span aria-hidden="true">{suffix}</span>}</div>
@@ -436,8 +444,9 @@ function KycReview({ record, onReviewed }: { record: KycRecord; onReviewed: (sta
     {record.reason && <div className="identity-reason"><strong>Review note</strong><p>{record.reason}</p></div>}
     {record.status === 'pending' && <form className="identity-decision" onSubmit={event => { event.preventDefault(); review.mutate(); }}>
       <h3>Review decision</h3>
-      <div className="identity-fields"><label className="identity-field">Decision<select value={decision} onChange={event => setDecision(event.target.value as typeof decision)}>
-        <option value="verified">Verify submission</option><option value="rejected">Request corrections</option></select></label>
+      <div className="identity-fields"><div className="identity-field"><label htmlFor={prefix + '-decision'}>Decision</label>
+        <select id={prefix + '-decision'} value={decision} onChange={event => setDecision(event.target.value as typeof decision)}>
+          <option value="verified">Verify submission</option><option value="rejected">Request corrections</option></select></div>
         <div className="identity-field identity-wide"><label htmlFor={prefix + '-reason'}>Review note{decision === 'rejected' ? ' (required)' : ' (optional)'}</label>
           <textarea id={prefix + '-reason'} placeholder={decision === 'rejected' ? 'Explain what the customer needs to correct.' : 'Record the evidence you reviewed.'}
             rows={3} value={reason} required={decision === 'rejected'} maxLength={500} onChange={event => setReason(event.target.value)}/></div>

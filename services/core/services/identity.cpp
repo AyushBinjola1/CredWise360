@@ -1,4 +1,5 @@
 #include "services/identity.hpp"
+#include "services/assessment.hpp"
 #include "domain/profile.hpp"
 #include "security/accounts.hpp"
 #include "security/credentials.hpp"
@@ -31,6 +32,7 @@ Json saveProfile(Database& db, const std::string& id, const Json& changes) {
         UPDATE financial_profiles f SET employment=p.employment,stability_months=p.stability_months,
               credit_months=p.credit_months,utilization=p.utilization,on_time=p.on_time,missed=p.missed,
               income_regularity=p.income_regularity,rent=p.rent,utilities=p.utilities,consent=p.consent,
+              savings_reported=p.savings_reported,emi_reported=p.emi_reported,
               goal=p.goal,goal_amount=p.goal_amount,updated_at=now()
         FROM jsonb_populate_record(NULL::financial_profiles,$2::jsonb) p WHERE f.user_id=$1)", {id,values.dump()});
     Json money = Json::object();
@@ -42,6 +44,7 @@ Json saveProfile(Database& db, const std::string& id, const Json& changes) {
     auto metrics = profile.metrics();
     db.exec("INSERT INTO financial_snapshots(user_id,profile,metrics) VALUES($1,$2::jsonb,$3::jsonb)",
             {id,values.dump(),metrics.dump()});
+    recordProfileAssessment(db,id,values);
     identityAudit(db,id,id,"profile.updated");
     return {{"profile",values},{"metrics",metrics}};
 }

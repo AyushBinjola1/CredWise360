@@ -33,7 +33,9 @@ Preferences have `theme` (system, light, dark), `language` (en, hi), and a `noti
 | salary, business_income, other_income, essential, discretionary, savings, existing_emi, debt, assets, liabilities, reserves, goal_amount | Integer paise, 0–100,000,000,000 per field |
 | employment | Nonblank text, up to 80 UTF-8 bytes |
 | stability_months, credit_months | Integers, 0–1,200 |
-| utilization, income_regularity, rent, utilities | Integer percentages, 0–100 |
+| utilization | Integer percentage, 0–100 |
+| income_regularity, rent, utilities | Nullable percentages, 0–100. A blank records missing evidence. An explicit zero records observed performance. |
+| savings_reported, emi_reported | Boolean evidence flags. Updating an amount records it as reported. Setting its flag to false withdraws it from the alternative assessment. |
 | on_time, missed | Repayment counts, 0–12,000 |
 | consent | Boolean for optional alternative evidence |
 | goal | Text, up to 240 UTF-8 bytes |

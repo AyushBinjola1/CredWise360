@@ -25,5 +25,8 @@ erDiagram
 | financial_snapshots | Preserve the profile and its calculated metrics at the time of a profile change. |
 | synthetic_documents, kyc_records, kyc_history | Keep bounded synthetic document bytes, review status, rejection reasons and review history. A composite foreign key associates the file with its submitting account. |
 | identity_audit | Record account, profile and verification actions for later investigation. |
+| scoring_policies | Keep immutable versions of conventional and alternative weights, thresholds and the administrator’s change note. |
+| credit_assessments, credit_score_history, credit_inquiries | Associate the current assessment with its policy, retain score changes, and count distinct inquiries within the policy window. |
+| loan_products, product_policy_changes | Keep eight independent product policies and preserve the previous and new terms when an administrator changes pricing or eligibility. |
 
 The SQL files in [database/migrations](../database/migrations) define exact constraints and indexes. A successful migration inserts its filename and deployment time in the same transaction.

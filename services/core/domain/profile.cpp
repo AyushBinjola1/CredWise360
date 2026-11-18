@@ -11,10 +11,11 @@ const std::vector<std::string>& FinancialProfile::moneyFields() {
 }
 
 FinancialProfile::FinancialProfile() {
-    values_ = {{"employment","Not specified"},{"goal",""},{"consent",false}};
+    values_ = {{"employment","Not specified"},{"goal",""},{"consent",false},
+               {"rent",nullptr},{"utilities",nullptr},{"income_regularity",nullptr},
+               {"savings_reported",false},{"emi_reported",false}};
     for (const auto& key : moneyFields()) values_[key] = 0;
-    for (const auto key : {"goal_amount","stability_months","credit_months","utilization","on_time",
-                           "missed","income_regularity","rent","utilities"}) values_[key] = 0;
+    for (const auto key : {"goal_amount","stability_months","credit_months","utilization","on_time","missed"}) values_[key] = 0;
 }
 
 FinancialProfile FinancialProfile::adjusted(const Json& changes) const {
@@ -22,7 +23,12 @@ FinancialProfile FinancialProfile::adjusted(const Json& changes) const {
     FinancialProfile result(*this);
     for (const auto& [key, value] : changes.items()) {
         require(values_.contains(key), "Unknown financial profile field: " + key + ".");
-        if (key == "consent") require(value.is_boolean(), "Choose whether to use alternative evidence.");
+        if (key == "consent" || key == "savings_reported" || key == "emi_reported")
+            require(value.is_boolean(), "Choose whether evidence is available.");
+        else if (value.is_null() && (key == "rent" || key == "utilities" || key == "income_regularity")) {
+            result.values_[key] = nullptr;
+            continue;
+        }
         else if (key == "employment") field(changes, key, 80);
         else if (key == "goal") field(changes, key, 240, true);
         else {
@@ -34,6 +40,8 @@ FinancialProfile FinancialProfile::adjusted(const Json& changes) const {
         }
         result.values_[key] = value;
     }
+    if (changes.contains("savings") && !changes.contains("savings_reported")) result.values_["savings_reported"] = true;
+    if (changes.contains("existing_emi") && !changes.contains("emi_reported")) result.values_["emi_reported"] = true;
     return result;
 }
 

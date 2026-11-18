@@ -15,6 +15,10 @@ A browser form submits a same-origin request to the Next.js API handler. The han
 | Standard collections and sorting | `services/core/repositories/database.cpp`, `migrate` | A vector holds migration paths. Sorting applies revisions deterministically in O(n log n) time. |
 | Exception handling | `services/core/common.hpp`, `Error`, and `services/core/main.cpp` | Validation exceptions become HTTP errors. Database handles still release correctly when an exception unwinds the stack. |
 | Concurrency and shutdown | `services/core/main.cpp` | HTTP requests run in a bounded worker pool. A signal-aware monitor stops the listener. Each database request owns its connection. |
+| Strategy and polymorphism | `services/core/engines/credit.hpp`, `ScoringStrategy`, `ConventionalScoring` and `InclusiveScoring` | Follow a first-time borrower with consented evidence through `CreditScoreEngine::evaluate`. The policy version and observed factors determine the result. |
+| Factory and ownership | `services/core/domain/loan.cpp`, `LoanFactory::make` | A slug selects one of eight constructors through a hash map. A smart pointer owns the resulting loan policy and virtual methods apply product-specific review rules. |
+| Composition and numerical algorithms | `services/core/engines/emi.cpp`, `EMIEngine`, `AmortizationSchedule` and `Installment` | Build the month-by-month schedule, trace final-paise reconciliation and solve effective cost by bisection over the actual scheduled payments. |
+| Sorting and deterministic ties | `services/core/services/market.cpp`, `recommended` | Rank eligible products and alternatives by compatibility, total borrowing cost and catalogue order. The recommendation keeps the requested principal and term. |
 
 ## Questions for the viva
 

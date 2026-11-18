@@ -1,0 +1,41 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+const path='docs/openapi.json',api=JSON.parse(readFileSync(path,'utf8'));
+const str={type:'string'},num={type:'number'},int={type:'integer'},bool={type:'boolean'},money={type:'integer',description:'Integer INR paise'},percent={type:'number',description:'Percent'},bps={type:'integer',description:'Annual or fee basis points as labelled'};
+const list=items=>({type:'array',items}),ref=name=>({$ref:'#/components/schemas/'+name});
+const obj=(properties,required=[])=>({type:'object',properties,...(required.length?{required}:{})});
+const objMap={type:'object',additionalProperties:true};
+const profileFields=api.components.schemas.ProfileFields.properties;
+for(const field of ['rent','utilities','income_regularity'])profileFields[field]={type:['integer','null'],minimum:0,maximum:100,description:'Null means no evidence was supplied.'};
+Object.assign(profileFields,{savings_reported:bool,emi_reported:bool});
+const requiredProfile=api.components.schemas.FinancialProfile.allOf[1].required;
+for(const field of ['savings_reported','emi_reported'])if(!requiredProfile.includes(field))requiredProfile.push(field);
+const term=obj({product_slug:str,principal:money,months:int,rate_bps:bps,fee_bps:bps,upfront:money,method:str,prepayment:money,prepay_month:int,next_rate_bps:bps,rate_month:int},['principal','months']);
+term.anyOf=[{required:['rate_bps']},{required:['product_slug']}];
+const product=obj({slug:str,name:str,description:str,min_amount:money,max_amount:money,min_months:int,max_months:int,rate_bps:bps,fee_bps:bps,fee_cap:money,documents:list(str),collateral:str,purposes:list(str),method:str,min_income:money,max_emi_percent:percent,min_score:int,min_stability_months:int,prepayment_from_month:int,prepayment_fee_bps:bps,late_fee:money,grace_days:int,risk_policy:str,updated_at:str});
+const schedule=obj({month:int,payment:money,interest:money,principal:money,balance:money,prepayment:money,prepayment_fee:money,rate_bps:bps});
+const quote=obj({emi:money,total_interest:money,total_repayment:money,fee:money,upfront:money,prepayment_fees:money,borrowing_cost:money,net_proceeds:money,actual_months:int,total_cost:money,effective_rate:percent,schedule:list(ref('Instalment'))});
+const offer=obj({product:ref('Product'),quote:ref('Quote'),eligible:{type:['boolean','null']},human_review:bool,reasons:list(str),warnings:list(str),compatibility:{type:['number','null']}});
+Object.assign(api.components.schemas,{QuoteInput:term,Product:product,Instalment:schedule,Quote:quote,Offer:offer,
+ Assessment:obj({score:{type:['integer','null'],minimum:300,maximum:900},capacity:money,risk:str,stability:{type:['number','null']},health:{type:['number','null']},strategy:str,human_review:bool,affordability:{type:['number','null']},prior_score:{type:['integer','null']},change:{type:['integer','null']},positive_factors:list(str),negative_factors:list(str),reason_codes:list(str),reasons:list(str),suggestions:list(str),factors:list(obj({name:str,weight:percent,value:{type:['number','null']},reason:str})),history:list(obj({score:{type:['integer','null']},created_at:str}))})});
+const itemset=s=>obj({items:list(s)},['items']);
+function route(method,path,summary,data,body=null,access='customer',status=200){
+ const key=method.toLowerCase(),write=key!=='get',params=[...path.matchAll(/\{(\w+)\}/g)].map(([,name])=>({in:'path',name,required:true,schema:name==='slug'?str:int}));
+ const security={};if(write)security.browserAction=[];if(access!=='public')security.session=[];
+ const operation={operationId:key+path.replace(/[{}]/g,'').replace(/\/([a-z0-9-]+)/g,(_,p)=>p[0].toUpperCase()+p.slice(1)),summary,description:access==='admin'?'Administrator session required.':access==='public'?'Public local simulation endpoint.':'Current customer session required.',security:Object.keys(security).length?[security]:[],...(params.length?{parameters:params}:{}),responses:{}};
+ if(body)operation.requestBody={required:true,content:{'application/json':{schema:body}}};
+ operation.responses[status]={description:'Successful operation',content:{'application/json':{schema:obj({data},['data'])}}};
+ for(const [code,description] of [[401,'Session required'],[403,'Permission or origin check failed'],[404,'Record not found'],[409,'State or duplicate conflict'],[422,'Validation failed'],[503,'Service unavailable']])operation.responses[code]={description,content:{'application/json':{schema:ref('ErrorEnvelope')}}};
+ (api.paths[path]??={})[key]=operation;
+}
+route('GET','/credit','Explain current assessment and history',ref('Assessment'));
+route('GET','/admin/policy','Read policy and version history',objMap,null,'admin');
+route('PUT','/admin/policy','Version the simulated assessment policy',objMap,obj({conventional_weights:objMap,alternative_weights:objMap,thresholds:objMap,base_version:int,note:str},['note']),'admin');
+route('GET','/admin/policy/consistency','Test equivalent synthetic financial profiles',objMap,null,'admin');
+route('GET','/products','List the lending marketplace',itemset(ref('Product')),null,'public');
+route('GET','/products/{slug}','Read product rules',ref('Product'),null,'public');
+route('POST','/calculate','Quote a synthetic loan and reconcile its schedule',ref('Quote'),ref('QuoteInput'),'public');
+route('POST','/compare','Compare up to four products',itemset(ref('Offer')),obj({slugs:{type:'array',items:str,minItems:1,maxItems:4,uniqueItems:true},terms:{type:'object',additionalProperties:int},principal:money,months:int},['slugs','principal','months']),'public');
+route('POST','/recommendations','Rank products for a stated need',obj({items:list(ref('Offer')),alternatives:list(ref('Offer'))},['items','alternatives']),obj({purpose:str,principal:money,months:int},['purpose','principal','months']));
+route('GET','/admin/products/{slug}','Read product configuration',ref('Product'),null,'admin');
+route('PUT','/admin/products/{slug}','Update product configuration',ref('Product'),product,'admin');
+writeFileSync(path,JSON.stringify(api,null,2)+'\n');

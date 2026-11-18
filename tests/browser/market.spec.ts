@@ -1,0 +1,75 @@
+import { expect, test } from '@playwright/test';
+
+test('catalogue filters, product terms and mobile calculator deep link', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/products');
+  await expect(page.getByRole('heading', { level: 1, name: 'Loan marketplace' })).toBeVisible();
+  await expect(page.locator('article.market-product')).toHaveCount(8);
+  await page.getByLabel('Search loan products').fill('zzzz');
+  await expect(page.getByRole('heading', { name: 'No matching products' })).toBeVisible();
+  await page.getByLabel('Search loan products').fill('education');
+  await expect(page.locator('article.market-product')).toHaveCount(1);
+  await page.getByRole('link', { name: 'View Education loan details' }).click();
+  await expect(page.getByRole('heading', { name: 'Education loan', exact: true })).toBeVisible();
+  await expect(page.getByText('Synthetic admission letter', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Estimate a repayment' }).click();
+  await expect(page.getByLabel('Starting product')).toHaveValue('education');
+  await expect(page.getByTestId('calculated-emi')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('calculator reconciles a zero rate, flat rate, floating change and an extra payment', async ({ page }) => {
+  await page.goto('/calculator');
+  const emi = page.getByTestId('calculated-emi');
+  await page.getByLabel('Loan amount', { exact: true }).fill('12000');
+  await page.getByLabel('Annual interest rate', { exact: true }).fill('0');
+  await page.getByLabel('Repayment term', { exact: true }).fill('12');
+  await expect(emi).toHaveText('₹1,000');
+  const table = page.getByRole('region', { name: 'Monthly repayment schedule table' });
+  await expect(table.locator('tbody tr')).toHaveCount(12);
+  await expect(table.locator('tbody tr').last().locator('td').last()).toHaveText('₹0');
+  await page.getByLabel('Interest method').selectOption('flat');
+  await page.getByLabel('Annual interest rate', { exact: true }).fill('12');
+  await expect(emi).toHaveText('₹1,120');
+  await page.getByLabel('Interest method').selectOption('floating');
+  await page.getByLabel('Revised annual rate').fill('0');
+  await page.getByLabel('First month at revised rate').fill('1');
+  await expect(emi).toHaveText('₹1,000');
+  await page.getByText('Fees and prepayment', { exact: true }).click();
+  await page.getByLabel('Model an extra payment').check();
+  await page.getByLabel('Extra payment', { exact: true }).fill('5000');
+  await page.getByLabel('Extra payment month').fill('1');
+  await expect(table.locator('tbody tr')).toHaveCount(7);
+  await expect(table.locator('tbody tr').first().locator('td').first()).toHaveText('₹6,000');
+  const downloaded = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download CSV' }).click();
+  expect((await downloaded).suggestedFilename()).toBe('credwise-repayment-schedule.csv');
+  await page.getByLabel('Repayment term', { exact: true }).fill('0');
+  await expect(page.getByRole('heading', { name: 'Check the loan assumptions' })).toBeVisible();
+});
+
+test('comparison reflects product-specific terms, highlights tradeoffs and enforces four choices', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/compare');
+  const table = page.getByRole('region', { name: 'Product comparison table' });
+  await expect(table.getByRole('columnheader')).toHaveCount(3);
+  await page.getByText('Adjust terms by product', { exact: true }).click();
+  await page.getByRole('spinbutton', { name: /Personal loan term/ }).fill('12');
+  const row = table.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'Repayment term', exact: true }) });
+  await expect(row.locator('td').first()).toContainText('12 months');
+  await expect(row.locator('td').first()).toContainText('Shortest term');
+  await expect(row.locator('td').nth(1)).toHaveText('24 months');
+  await page.getByLabel('Chart measure').selectOption('emi');
+  await page.getByRole('checkbox', { name: 'Vehicle loan' }).check();
+  await page.getByRole('checkbox', { name: 'Gold loan' }).check();
+  await expect(page.getByRole('checkbox', { name: 'Home loan' })).toBeDisabled();
+  await expect(table.getByRole('columnheader')).toHaveCount(5);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('checkbox', { name: 'Education loan' }).uncheck();
+  await page.getByRole('checkbox', { name: 'Vehicle loan' }).uncheck();
+  await page.getByRole('checkbox', { name: 'Gold loan' }).uncheck();
+  await expect(page.getByRole('heading', { name: 'Choose at least two products' })).toBeVisible();
+});
