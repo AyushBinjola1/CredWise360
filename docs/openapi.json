@@ -1,0 +1,1 @@
+{"openapi":"3.1.0","info":{"title":"CredWise 360 local simulation API","version":"1.0.0"},"servers":[{"url":"/api"}],"paths":{"/health":{"get":{"operationId":"health","summary":"Database readiness and applied migration count","responses":{"200":{"description":"Service ready"},"503":{"description":"Database unavailable"}}}}}}

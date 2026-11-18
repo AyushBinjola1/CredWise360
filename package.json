@@ -1,0 +1,1 @@
+{"name":"credwise-360","private":true,"workspaces":["apps/web"],"scripts":{"dev":"npm run dev -w apps/web","build":"npm run build -w apps/web","start":"npm run start -w apps/web","test:api":"node --test --test-concurrency=1 tests/*.test.mjs","test:browser":"playwright test"},"devDependencies":{"@playwright/test":"^1.56.0"}}

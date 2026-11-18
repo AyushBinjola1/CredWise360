@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: credwise
+      POSTGRES_USER: credwise
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a local password in .env}
+    volumes:
+      - credwise-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U credwise -d credwise"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  core:
+    build:
+      context: .
+      dockerfile: services/core/Dockerfile
+    environment:
+      PGHOST: db
+      PGUSER: credwise
+      PGDATABASE: credwise
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_URL: "connect_timeout=5"
+      DEMO_MODE: "1"
+      WEB_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on: [core]
+    ports: ["127.0.0.1:3000:3000"]
+volumes:
+  credwise-data: {}

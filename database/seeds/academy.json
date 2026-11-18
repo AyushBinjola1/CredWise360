@@ -1,0 +1,200 @@
+[
+  {
+    "slug": "responsible-borrowing",
+    "en": {
+      "title": "Borrow for a purpose",
+      "lesson": "Write down what you need, when you need it and how much you can put towards it yourself. Suppose a replacement work tool costs ₹8,000. You have ₹3,000 set aside for the purchase. The gap is ₹5,000. Before borrowing that amount, compare repair costs and check whether the instalments fit your budget.",
+      "question": "How much of the ₹8,000 purchase still needs funding after your ₹3,000 contribution?",
+      "choices": ["₹3,000", "₹5,000", "₹8,000"],
+      "explanation": "₹8,000 minus ₹3,000 leaves ₹5,000 to fund. A lender’s offer could be larger than the amount you actually need."
+    },
+    "hi": {
+      "title": "पैसे उधार लेने की वजह तय करें",
+      "lesson": "लिखें कि आपको किस चीज़ की ज़रूरत है, कब तक है और उसके लिए आप अपनी जेब से कितना दे सकते हैं। मान लें कि काम का नया औज़ार ₹8,000 का है। आपने इस खरीद के लिए ₹3,000 अलग रखे हैं। अब ₹5,000 की कमी है। उधार लेने से पहले पुराने औज़ार की मरम्मत का खर्च देखें और हिसाब लगाएँ कि किस्त आपके बजट में आएगी या नहीं।",
+      "question": "₹8,000 के औज़ार के लिए अपने ₹3,000 लगाने के बाद कितने पैसे जुटाने बाकी हैं?",
+      "choices": ["₹3,000", "₹5,000", "₹8,000"],
+      "explanation": "₹8,000 में से ₹3,000 घटाने पर ₹5,000 बचते हैं। आपको इससे बड़ा ऋण मिल सकता है, पर आपकी ज़रूरत ₹5,000 की है।"
+    },
+    "answer": 1
+  },
+  {
+    "slug": "interest-rates",
+    "en": {
+      "title": "Read an interest rate",
+      "lesson": "Interest is the price of borrowing money for a period. In this example, you borrow ₹10,000 for one year at 9% simple annual interest, repay everything at the end and pay no fees. The interest is ₹10,000 × 0.09, or ₹900. When comparing offers, check the rate period, fees and when repayments begin.",
+      "question": "What is the interest alone on the example loan?",
+      "choices": ["₹90", "₹10,900", "₹900"],
+      "explanation": "Nine per cent of ₹10,000 is ₹900. The full repayment includes both the ₹10,000 borrowed and the ₹900 interest."
+    },
+    "hi": {
+      "title": "ब्याज दर को पढ़ना सीखें",
+      "lesson": "ब्याज वह कीमत है जो आप कुछ समय के लिए पैसे उधार लेने पर देते हैं। मान लें कि आपने एक साल के लिए ₹10,000 उधार लिए। सालाना साधारण ब्याज 9% है। आप पूरी रकम साल के अंत में चुकाएँगे और कोई शुल्क नहीं है। ब्याज ₹10,000 × 0.09 यानी ₹900 होगा। दो प्रस्ताव देखते समय जाँचें कि दर किस अवधि की है, शुल्क कितना है और किस्तें कब शुरू होंगी।",
+      "question": "इस उदाहरण में सिर्फ़ ब्याज कितना है?",
+      "choices": ["₹90", "₹10,900", "₹900"],
+      "explanation": "₹10,000 का नौ प्रतिशत ₹900 होता है। कुल भुगतान में उधार लिए ₹10,000 और ब्याज के ₹900 दोनों जुड़ते हैं।"
+    },
+    "answer": 2
+  },
+  {
+    "slug": "simple-and-compound-interest",
+    "en": {
+      "title": "See how interest builds",
+      "lesson": "Simple interest uses the original amount each time. Compound interest also includes interest already added. Suppose ₹10,000 stays unpaid for two years at 10% a year with no fees. Simple interest adds ₹1,000 each year. With annual compounding, the second year starts at ₹11,000 and adds ₹1,100.",
+      "question": "With annual compounding in this example, what is owed at the end of year two?",
+      "choices": ["₹12,100", "₹12,000", "₹11,100"],
+      "explanation": "The first year ends at ₹11,000. Adding 10% of ₹11,000 gives ₹12,100. The simple-interest example would end at ₹12,000."
+    },
+    "hi": {
+      "title": "समझें कि ब्याज कैसे बढ़ता है",
+      "lesson": "साधारण ब्याज हर बार शुरू की रकम पर लगता है। चक्रवृद्धि ब्याज में पहले जुड़ा ब्याज भी अगली गणना में शामिल होता है। मान लें कि ₹10,000 दो साल तक बकाया हैं। दर सालाना 10% है और कोई शुल्क नहीं है। साधारण ब्याज में हर साल ₹1,000 जुड़ेंगे। सालाना चक्रवृद्धि में दूसरे साल की शुरुआत ₹11,000 से होगी और उस साल ₹1,100 ब्याज जुड़ेगा।",
+      "question": "इस उदाहरण में सालाना चक्रवृद्धि ब्याज के साथ दूसरे साल के अंत में कितना बकाया होगा?",
+      "choices": ["₹12,100", "₹12,000", "₹11,100"],
+      "explanation": "पहले साल के अंत में रकम ₹11,000 है। इस पर 10% यानी ₹1,100 जोड़ने से ₹12,100 होते हैं। साधारण ब्याज से कुल ₹12,000 होते।"
+    },
+    "answer": 0
+  },
+  {
+    "slug": "monthly-instalments",
+    "en": {
+      "title": "Look inside an EMI",
+      "lesson": "An EMI is a scheduled monthly instalment. On a reducing-balance loan, part covers interest on the outstanding balance and the rest reduces the principal. Suppose this month’s EMI is ₹1,100, including ₹100 interest and no fees. The other ₹1,000 reduces the amount you borrowed.",
+      "question": "How much of this month’s ₹1,100 EMI reduces principal?",
+      "choices": ["₹100", "₹1,100", "₹1,000"],
+      "explanation": "Subtract the ₹100 interest from the ₹1,100 payment. The remaining ₹1,000 reduces principal."
+    },
+    "hi": {
+      "title": "मासिक किस्त में क्या शामिल है?",
+      "lesson": "ईएमआई हर महीने देय तय किस्त है। घटती शेष राशि वाले ऋण में किस्त का एक हिस्सा बकाया रकम का ब्याज चुकाता है और बाकी मूलधन घटाता है। मान लें कि इस महीने की किस्त ₹1,100 है। इसमें ₹100 ब्याज है और कोई शुल्क नहीं है। बाकी ₹1,000 से आपका मूलधन घटेगा।",
+      "question": "इस महीने की ₹1,100 की किस्त में कितना हिस्सा मूलधन घटाएगा?",
+      "choices": ["₹100", "₹1,100", "₹1,000"],
+      "explanation": "₹1,100 की किस्त में से ₹100 ब्याज घटाएँ। बचे ₹1,000 मूलधन चुकाने में लगेंगे।"
+    },
+    "answer": 2
+  },
+  {
+    "slug": "loan-affordability",
+    "en": {
+      "title": "Find room in your monthly budget",
+      "lesson": "Add up money you can count on each month and subtract the amounts already committed. With ₹30,000 take-home income, ₹16,000 essentials, ₹5,000 existing instalments and ₹4,000 planned savings, ₹5,000 remains. Allow room for irregular costs before deciding how much of that balance to commit.",
+      "question": "How much remains after all three commitments in this example?",
+      "choices": ["₹9,000", "₹5,000", "₹14,000"],
+      "explanation": "₹30,000 − ₹16,000 − ₹5,000 − ₹4,000 = ₹5,000. That balance also has to cover any costs you left out."
+    },
+    "hi": {
+      "title": "महीने के बजट में गुंजाइश देखें",
+      "lesson": "हर महीने भरोसे से मिलने वाली रकम जोड़ें। फिर उसमें से वे रकम घटाएँ जिनका इस्तेमाल तय है। मान लें कि हाथ में ₹30,000 आते हैं। ज़रूरी खर्च ₹16,000 हैं, मौजूदा किस्तें ₹5,000 हैं और आप ₹4,000 बचाना चाहते हैं। अब ₹5,000 बचते हैं। नई किस्त तय करने से पहले कभी-कभार आने वाले खर्चों की जगह भी रखें।",
+      "question": "इस उदाहरण में तीनों तय रकम घटाने के बाद कितना बचता है?",
+      "choices": ["₹9,000", "₹5,000", "₹14,000"],
+      "explanation": "₹30,000 − ₹16,000 − ₹5,000 − ₹4,000 = ₹5,000। हिसाब से छूट गए खर्च भी इसी रकम से पूरे होंगे।"
+    },
+    "answer": 1
+  },
+  {
+    "slug": "emergency-funds",
+    "en": {
+      "title": "Measure your emergency cushion",
+      "lesson": "An emergency fund is money you can access when income stops or an unexpected bill arrives. Divide accessible savings by the monthly costs you would still need to pay. If you have ₹36,000 saved and would need ₹12,000 each month, your savings cover three months at that spending level.",
+      "question": "How long would ₹36,000 last at ₹12,000 per month, with no new income?",
+      "choices": ["3 months", "4 months", "12 months"],
+      "explanation": "₹36,000 ÷ ₹12,000 per month = 3 months. Changing the monthly costs changes the result."
+    },
+    "hi": {
+      "title": "मुश्किल समय के लिए बचत आँकें",
+      "lesson": "आपातकालीन बचत वह पैसा है जिसे आमदनी रुकने या अचानक बड़ा खर्च आने पर आप तुरंत इस्तेमाल कर सकते हैं। तुरंत मिल सकने वाली बचत को उन मासिक खर्चों से भाग दें जिन्हें तब भी चुकाना होगा। अगर ₹36,000 बचाए हैं और हर महीने ₹12,000 चाहिए, तो इतनी बचत तीन महीने चलेगी।",
+      "question": "नई आमदनी के बिना ₹12,000 के मासिक खर्च पर ₹36,000 कितने महीने चलेंगे?",
+      "choices": ["3 महीने", "4 महीने", "12 महीने"],
+      "explanation": "₹36,000 ÷ ₹12,000 प्रति महीना = 3 महीने। मासिक खर्च बदलने पर यह अवधि भी बदलेगी।"
+    },
+    "answer": 0
+  },
+  {
+    "slug": "credit-scores",
+    "en": {
+      "title": "Read a simulated credit score",
+      "lesson": "A score summarises evidence under a particular set of rules. CredWise uses its own demonstration rules and a 300–900 scale. Suppose your simulated score moves from 620 to 650 after you record repayments. Open the factor breakdown to see which inputs changed. A first-time borrower can have too little history to assess reliably.",
+      "question": "The example score rises from 620 to 650. What can you conclude?",
+      "choices": ["A lender has approved the loan", "Every credit bureau added 30 points", "The CredWise simulation increased by 30 points"],
+      "explanation": "650 − 620 = 30. This change describes this demonstration model. Lending decisions and actual bureau scores have their own inputs and rules."
+    },
+    "hi": {
+      "title": "अभ्यास वाला क्रेडिट स्कोर समझें",
+      "lesson": "क्रेडिट स्कोर उपलब्ध जानकारी को कुछ तय नियमों से एक अंक में दिखाता है। CredWise के अभ्यास में अपने नियम और 300 से 900 तक के अंक हैं। मान लें कि किस्तों का रिकॉर्ड दर्ज करने के बाद यहाँ आपके अंक 620 से 650 हो गए। कारणों का विवरण खोलकर देखें कि कौन-सी जानकारी बदली। पहली बार उधार लेने वाले के बारे में भरोसेमंद आकलन के लिए पुरानी जानकारी कम हो सकती है।",
+      "question": "उदाहरण में स्कोर 620 से 650 हुआ। इससे क्या पता चलता है?",
+      "choices": ["ऋण देने वाले ने आवेदन मंज़ूर कर दिया", "हर क्रेडिट ब्यूरो ने 30 अंक बढ़ाए", "CredWise के अभ्यास में स्कोर 30 अंक बढ़ा"],
+      "explanation": "650 − 620 = 30। यह बदलाव इसी अभ्यास के नियमों से निकला है। ऋण के फ़ैसले और वास्तविक ब्यूरो स्कोर अपनी जानकारी और नियमों पर निर्भर करते हैं।"
+    },
+    "answer": 2
+  },
+  {
+    "slug": "credit-utilisation",
+    "en": {
+      "title": "Calculate credit utilisation",
+      "lesson": "On a revolving credit account, utilisation is the share of the available limit already in use. With a balance of ₹6,000 and a total limit of ₹20,000, utilisation is 30%. If you repay ₹2,000 and make no new purchases, the balance falls to ₹4,000.",
+      "question": "After the payment, what share of the unchanged ₹20,000 limit is in use?",
+      "choices": ["10%", "20%", "30%"],
+      "explanation": "Divide the new ₹4,000 balance by ₹20,000 and multiply by 100. The result is 20%."
+    },
+    "hi": {
+      "title": "क्रेडिट सीमा का इस्तेमाल निकालें",
+      "lesson": "क्रेडिट कार्ड जैसे खाते में कुल सीमा का जितना हिस्सा इस्तेमाल हुआ है, उसे प्रतिशत में दिखा सकते हैं। मान लें कि सीमा ₹20,000 है और बकाया ₹6,000 है। अभी सीमा का 30% इस्तेमाल हुआ है। अगर आप ₹2,000 चुका दें और नई खरीद न करें, तो बकाया ₹4,000 रह जाएगा।",
+      "question": "भुगतान के बाद ₹20,000 की उसी सीमा का कितना हिस्सा इस्तेमाल हो रहा है?",
+      "choices": ["10%", "20%", "30%"],
+      "explanation": "नए बकाया ₹4,000 को ₹20,000 से भाग दें और 100 से गुणा करें। जवाब 20% है।"
+    },
+    "answer": 1
+  },
+  {
+    "slug": "debt-management",
+    "en": {
+      "title": "Choose a repayment order",
+      "lesson": "Cover the required payments on each debt first. Suppose you have extra money and two debts with no prepayment charges. One has ₹8,000 outstanding at 9% a year. The other has ₹20,000 at 15%. The avalanche method sends extra money to the higher-rate debt. The snowball method starts with the smaller balance.",
+      "question": "Where does the avalanche method send the extra payment in this example?",
+      "choices": ["To the ₹20,000 debt at 15%", "To the ₹8,000 debt at 9%", "To both debts in equal parts"],
+      "explanation": "With both required payments covered, each extra rupee sent to the 15% debt avoids more interest per year under these assumptions."
+    },
+    "hi": {
+      "title": "तय करें कि पहले कौन-सा कर्ज़ घटाएँ",
+      "lesson": "पहले हर कर्ज़ की तय किस्त के लिए पैसे रखें। मान लें कि आपके पास कुछ अतिरिक्त पैसे हैं। एक कर्ज़ में ₹8,000 बकाया हैं और सालाना ब्याज 9% है। दूसरे में ₹20,000 बकाया हैं और दर 15% है। समय से पहले भुगतान पर कोई शुल्क नहीं है। ‘एवलांच’ तरीके में अतिरिक्त पैसा सबसे ऊँची ब्याज दर वाले कर्ज़ पर लगता है। ‘स्नोबॉल’ तरीके में सबसे कम बकाया वाला कर्ज़ पहले आता है।",
+      "question": "इस उदाहरण में एवलांच तरीके से अतिरिक्त भुगतान कहाँ जाएगा?",
+      "choices": ["15% वाले ₹20,000 के कर्ज़ में", "9% वाले ₹8,000 के कर्ज़ में", "दोनों में बराबर-बराबर"],
+      "explanation": "दोनों तय किस्तों के लिए पैसा रखने के बाद 15% वाले कर्ज़ पर दिया हर अतिरिक्त रुपया इन शर्तों में साल का ज़्यादा ब्याज बचाता है।"
+    },
+    "answer": 0
+  },
+  {
+    "slug": "loan-fraud-awareness",
+    "en": {
+      "title": "Pause when an offer looks suspicious",
+      "lesson": "An unsolicited message promises a ₹20,000 loan after a ₹500 advance to a personal account. It also asks for a one-time password. Requests like these warrant independent checks. Keep security codes private and find the lender’s contact details yourself before taking action.",
+      "question": "What is the safest next step for this message?",
+      "choices": ["Send ₹500 to test the offer", "Give the caller the one-time password", "Pause and check the offer using an independently found contact"],
+      "explanation": "Independent contact lets you verify who made the offer. A payment or shared security code can expose money or account access."
+    },
+    "hi": {
+      "title": "संदिग्ध ऋण प्रस्ताव पर रुककर जाँचें",
+      "lesson": "बिना माँगे एक संदेश आता है कि किसी के निजी खाते में ₹500 भेजने पर ₹20,000 का ऋण मिल जाएगा। संदेश में आपका वन-टाइम पासवर्ड (ओटीपी) भी माँगा गया है। ऐसी माँग की अलग से जाँच ज़रूरी है। सुरक्षा कोड अपने पास रखें और आगे बढ़ने से पहले ऋण देने वाली संस्था का संपर्क खुद खोजें।",
+      "question": "ऐसे संदेश पर सबसे सुरक्षित अगला कदम क्या है?",
+      "choices": ["प्रस्ताव जाँचने के लिए ₹500 भेज दें", "फ़ोन करने वाले को ओटीपी बता दें", "रुकें और खुद खोजे गए संपर्क से प्रस्ताव की जाँच करें"],
+      "explanation": "अपने खोजे हुए संपर्क से आप पता कर सकते हैं कि प्रस्ताव सच में किसने भेजा। पैसे या सुरक्षा कोड देने से आपकी रकम या खाते तक पहुँच खतरे में पड़ सकती है।"
+    },
+    "answer": 2
+  },
+  {
+    "slug": "education-loans",
+    "en": {
+      "title": "Plan borrowing semester by semester",
+      "lesson": "For each semester, list tuition and living costs, then subtract confirmed scholarships and money you can contribute. If fees are ₹45,000, living costs ₹15,000, a confirmed scholarship ₹20,000 and your contribution ₹10,000, the gap is ₹30,000. Check whether interest builds during study and any repayment break.",
+      "question": "How much funding is still needed for this semester?",
+      "choices": ["₹60,000", "₹30,000", "₹40,000"],
+      "explanation": "Total costs are ₹60,000. The scholarship and contribution cover ₹30,000, leaving ₹30,000 to fund."
+    },
+    "hi": {
+      "title": "हर सेमेस्टर की पढ़ाई का खर्च जोड़ें",
+      "lesson": "हर सेमेस्टर की फ़ीस और रहने का खर्च लिखें। फिर पक्की छात्रवृत्ति और अपनी ओर से दी जा सकने वाली रकम घटाएँ। मान लें कि फ़ीस ₹45,000 है, रहने का खर्च ₹15,000 है, छात्रवृत्ति ₹20,000 तय है और आप ₹10,000 दे सकते हैं। अब ₹30,000 जुटाने हैं। यह भी जानें कि पढ़ाई के दौरान और किस्तें शुरू होने से पहले ब्याज जुड़ता है या नहीं।",
+      "question": "इस सेमेस्टर के लिए और कितने पैसे जुटाने हैं?",
+      "choices": ["₹60,000", "₹30,000", "₹40,000"],
+      "explanation": "कुल खर्च ₹60,000 है। छात्रवृत्ति और आपका योगदान मिलकर ₹30,000 पूरे करते हैं। बाकी ₹30,000 जुटाने होंगे।"
+    },
+    "answer": 1
+  }
+]

@@ -1,0 +1,29 @@
+name: CredWise verification
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: ci-password, POSTGRES_DB: credwise }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 3s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:ci-password@127.0.0.1:5432/credwise
+      DEMO_MODE: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build libpq-dev libssl-dev
+      - run: cmake -S . -B build -G Ninja && cmake --build build --parallel 2 && ctest --test-dir build --output-on-failure
+      - run: npm ci && npm run build
+      - run: |
+          ./build/services/core/credwise > /tmp/credwise-api.log 2>&1 &
+          npm start > /tmp/credwise-web.log 2>&1 &
+          for i in $(seq 1 45); do curl -fsS http://127.0.0.1:3000/api/health && break || sleep 1; done
+          npm run test:api
+          npx playwright install --with-deps chromium
+          npm run test:browser
