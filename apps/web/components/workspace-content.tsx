@@ -7,7 +7,7 @@ import {SafetyPage,DistressPage,AdminDistressPage} from './protection';
 import {SupportPage,AdminSupportPage} from './support';
 import {FairnessPage} from './fairness';
 import {AcademyPage,RewardsPage} from './academy';
-import {NotificationsPage,ReportsPage,AdminReportsPage,FraudPage} from './operations';
+import {NotificationsPage,ReportsPage,AdminReportsPage,FraudPage,AuditPage} from './operations';
 import {CreditPage,PolicyPage} from './credit';
 import {ProductAdmin} from './product-admin';
 import {MarketplacePage,ComparePage,CalculatorPage} from './marketplace';
@@ -20,6 +20,7 @@ export function WorkspaceContent({user,slug,parts}:{user:User;slug:string;parts:
  if(slug==='settings')return <SettingsPage/>;
  if(slug==='reports')return user.role==='admin'?<AdminReportsPage/>:<ReportsPage/>;
  if(slug==='fraud'&&user.role==='admin')return <FraudPage/>;
+ if(slug==='audit'&&user.role==='admin')return <AuditPage/>;
  if(slug==='disputes')return user.role==='admin'?<AdminSupportPage parts={parts}/>:<SupportPage parts={parts}/>;
  if(slug==='fairness'&&user.role==='admin')return <FairnessPage/>;
  if(slug==='distress')return user.role==='admin'?<AdminDistressPage/>:<DistressPage/>;

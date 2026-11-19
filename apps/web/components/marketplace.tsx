@@ -105,7 +105,7 @@ function ProductCard({ product, signedIn }: { product: Product; signedIn: boolea
     <h2><Link href={productHref(product, signedIn)}>{product.name}</Link></h2><p>{product.description}</p>
     <dl className="market-prices"><div><dt>Annual rate</dt><dd>{percent(product.rate_bps)}</dd></div>
       <div><dt>Term</dt><dd>{termRange(product)}</dd></div></dl>
-    <Link className="market-more" href={productHref(product, signedIn)} aria-label={'View ' + product.name + ' details'}>View details<ArrowRight size={15}/></Link>
+    <Link className="market-more" href={productHref(product, signedIn)} aria-label={'View details: ' + product.name}>View details<ArrowRight size={15}/></Link>
   </article>;
 }
 

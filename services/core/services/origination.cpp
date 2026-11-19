@@ -325,9 +325,19 @@ Json list(Database& db,const Request& req,const std::string& uid,bool admin) {
     Params values={uid,param("status"),param("product"),param("risk"),priority,param("q")};
     for (const auto& value:values) require(value.size()<=160,"Shorten the queue filter.");
     const auto total=db.one("SELECT count(*) AS total"+source,values).at("total");
-    const auto order=admin?
+    std::string order=admin?
         " ORDER BY (a.status IN ('submitted','under_review')) DESC,a.escalated DESC,a.submitted_at ASC NULLS LAST,a.id":
         " ORDER BY a.updated_at DESC,a.id DESC";
+    // An explicit sort replaces the default queue order. Only whitelisted columns are ever placed in the query text.
+    const auto sort=param("sort"),direction=param("dir","asc");
+    if (!sort.empty()) {
+        static const std::map<std::string,std::string> columns={{"amount","a.principal"},{"status","a.status"},{"updated","a.updated_at"},
+            {"applicant","u.name"},{"product","p.name"},{"submitted","a.submitted_at"}};
+        const auto column=columns.find(sort);
+        require(column!=columns.end(),"Choose a valid sort column.");
+        require(direction=="asc"||direction=="desc","Choose a valid sort direction.");
+        order=" ORDER BY "+column->second+(direction=="asc"?" ASC":" DESC")+" NULLS LAST,a.id DESC";
+    }
     values.emplace_back(std::to_string(size));values.emplace_back(std::to_string((page-1)*size));
     auto items=db.rows(R"(SELECT a.id,a.user_id,a.product_slug,a.principal,a.months,a.purpose,a.status,a.tracking_id,
         a.loan_id,a.escalated,a.revision,a.created_at,a.updated_at,a.submitted_at,u.name AS applicant_name,

@@ -1,4 +1,5 @@
 #include "security/accounts.hpp"
+#include <set>
 #include "security/credentials.hpp"
 #include <cctype>
 
@@ -178,6 +179,15 @@ std::optional<Response> authRoutes(Database& db, const Request& req) {
     return Response{{{"recovery_code",replacement}},200,security::sessionCookie("")};
 }
 
+bool sharedDemoAccount(const std::string& email) {
+    if (setting("DEMO_PROTECT") != "1") return false;
+    static const std::set<std::string> accounts = {"borrower@credwise.test","admin@credwise.test","diya.nair@credwise.test","rohan.iyer@credwise.test"};
+    return accounts.contains(email);
+}
+void blockSharedDemoChange(const Json& user, const std::string& what) {
+    if (user.is_object() && user.contains("email") && user.at("email").is_string() && sharedDemoAccount(user.at("email")))
+        throw Error(403,"demo_protected","The shared demonstration keeps " + what + " fixed so every visitor sees the same data. Register your own account to try this.");
+}
 Response settingsRoute(Database& db, const Request& req) {
     const auto user = authenticate(db,req,Permission::ownAccount);
     const auto id = asId(user);
@@ -191,6 +201,7 @@ Response settingsRoute(Database& db, const Request& req) {
     const auto account = db.one("SELECT active,password_hash,preferences FROM users WHERE id=$1 FOR UPDATE", {id});
     if (account.at("active") != true) throw Error(401,"unauthorized","This account is inactive.");
     bool deactivate = body.contains("active");
+    if (deactivate || body.contains("new_password") || body.contains("name")) blockSharedDemoChange(user, "its name, password and status");
     if (deactivate) {
         require(body.at("active") == false, "Contact support to reactivate an account.");
         if (user.at("role") == "admin") throw Error(403,"forbidden","Administrators must retain workspace access.");

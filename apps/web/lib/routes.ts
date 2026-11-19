@@ -34,6 +34,7 @@ export const admin:Destination[]=[
  {slug:'distress',name:'Distress watch',group:'Governance',icon:'wellbeing'},
  {slug:'fairness',name:'Fairness monitor',group:'Governance',icon:'fairness'},
  {slug:'fraud',name:'Fraud review',group:'Governance',icon:'fraud'},
+ {slug:'audit',name:'Audit trail',group:'Governance',icon:'checks'},
  {slug:'reports',name:'Portfolio reports',group:'Governance',icon:'reports'},
  {slug:'policy',name:'Scoring policy',group:'Governance',icon:'policy'},
  {slug:'products',name:'Product configuration',group:'Governance',icon:'market'},

@@ -26,6 +26,10 @@ public:
 };
 
 Json authenticate(Database&, const Request&, Permission);
+// The shared demonstration accounts are protected when DEMO_PROTECT=1: their identity, password, status and the
+// platform configuration they can reach stay fixed so one visitor cannot lock out or reconfigure the demo for others.
+bool sharedDemoAccount(const std::string& email);
+void blockSharedDemoChange(const Json& user, const std::string& what);
 std::optional<Response> authRoutes(Database&, const Request&);
 Json createAccount(Database&, const std::string& email, const std::string& name,
                    const std::string& password, const std::string& role, const std::string& recovery);

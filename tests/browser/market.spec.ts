@@ -11,7 +11,7 @@ test('catalogue filters, product terms and mobile calculator deep link', async (
   await expect(page.getByRole('heading', { name: 'No matching products' })).toBeVisible();
   await page.getByLabel('Search loan products').fill('education');
   await expect(page.locator('article.market-product')).toHaveCount(1);
-  await page.getByRole('link', { name: 'View Education loan details' }).click();
+  await page.getByRole('link', { name: 'View details: Education loan' }).click();
   await expect(page.getByRole('heading', { name: 'Education loan', exact: true })).toBeVisible();
   await expect(page.getByText('Synthetic admission letter', { exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Estimate a repayment' }).click();

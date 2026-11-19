@@ -200,6 +200,8 @@ Response postPayment(Database& db,const Request& req,const std::string& id,const
     const auto kind=field(req.body,"kind",20);
     static const std::set<std::string> kinds={"emi","partial","advance","prepayment","foreclosure"};
     require(kinds.contains(kind),"Choose a supported payment kind.");
+    if (kind!="emi" && kind!="partial")
+        blockSharedDemoChange(db.one("SELECT email FROM users WHERE id=$1",{owner}),"the demonstration loan balances");
     for (const auto& [fieldName,value]:req.body.items())
         require(fieldName=="kind" || fieldName=="amount" || fieldName=="payment_date" || fieldName=="expected_version","Unknown payment field.");
     Transaction tx(db);

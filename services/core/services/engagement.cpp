@@ -93,6 +93,22 @@ Json fraudDecision(Database& db, const std::string& admin, const std::string& id
     return updated;
 }
 
+// Administrator audit trail: who did what, to whom and when. Filters are bound as parameters, never concatenated.
+Json auditTrail(Database& db, const Request& req) {
+    auto param = [&](const char* key) { auto it = req.query.find(key); return it == req.query.end() ? std::string() : it->second; };
+    const auto action = param("action"), search = param("q");
+    require(action.size() <= 60 && search.size() <= 100, "Shorten the audit filters.");
+    std::int64_t page = 1;
+    if (!param("page").empty()) page = std::stoll(numeric(param("page")));
+    require(page <= 100000, "Choose a supported page.");
+    const std::string source = R"( FROM identity_audit a LEFT JOIN users actor ON actor.id=a.actor_id LEFT JOIN users subject ON subject.id=a.subject_id
+        WHERE ($1='' OR a.action LIKE $1||'%') AND ($2='' OR strpos(lower(concat_ws(' ',a.action,actor.name,subject.name,a.detail::text)),lower($2))>0))";
+    const auto total = db.one("SELECT count(*) AS n" + source, {action, search}).at("n");
+    auto items = db.rows(R"(SELECT a.id,a.action,a.created_at,actor.name AS actor_name,actor.email AS actor_email,subject.name AS subject_name,a.detail)" + source +
+                         " ORDER BY a.id DESC LIMIT 50 OFFSET $3", {action, search, std::to_string((page - 1) * 50)});
+    return {{"items", items}, {"total", total}, {"page", page}, {"page_size", 50}};
+}
+
 Json portfolio(Database& db) {
     auto totals = db.one(std::string(R"(SELECT
         (SELECT count(*) FROM users WHERE role='customer') AS customers,
@@ -112,7 +128,9 @@ Json portfolio(Database& db) {
         (SELECT coalesce(sum(fee+penalty),0) FROM repayment_transactions WHERE kind<>'disbursement') AS fees_collected,
         (SELECT count(DISTINCT s.loan_id) FROM repayment_schedules s JOIN loans l ON l.id=s.loan_id
            WHERE s.active AND s.paid_on IS NULL AND l.status='active' AND s.due_date<)") + today + R"() AS overdue_loans,
-        (SELECT count(*) FROM fraud_cases WHERE status IN ('open','investigating')) AS fraud_open)");
+        (SELECT count(*) FROM fraud_cases WHERE status IN ('open','investigating')) AS fraud_open,
+        (SELECT count(*) FROM disputes WHERE status IN ('open','in_review','awaiting_customer')) AS disputes_open,
+        (SELECT count(*) FROM distress_cases WHERE level IN ('elevated','high') AND outreach IN ('none','contacted')) AS distress_open)");
     return {{"totals", totals},
             {"by_status", db.rows("SELECT status,count(*) AS count FROM loan_applications GROUP BY status ORDER BY count DESC")},
             {"by_product", db.rows(R"(SELECT p.name,count(a.id) AS applications,
@@ -136,18 +154,29 @@ Json customerReport(Database& db, const std::string& uid) {
             {"score_history", db.rows("SELECT score,strategy,created_at FROM credit_score_history WHERE user_id=$1 ORDER BY id DESC LIMIT 24", {uid})}};
 }
 Json customerDashboard(Database& db, const std::string& uid) {
+    // Reminders are generated here too, so the notification badge reflects upcoming and overdue instalments.
+    Transaction tx(db);
+    syncReminders(db, uid);
     auto next = db.rows(std::string(R"(SELECT l.id AS loan_id,s.due_date,s.principal+s.interest-s.principal_paid-s.interest_paid AS amount,
         s.due_date<)") + today + R"( AS overdue FROM loans l
         CROSS JOIN LATERAL (SELECT * FROM repayment_schedules r WHERE r.loan_id=l.id AND r.active AND r.paid_on IS NULL ORDER BY r.month LIMIT 1) s
         WHERE l.user_id=$1 AND l.status='active' ORDER BY s.due_date LIMIT 1)", {uid});
-    return {{"applications", db.rows("SELECT status,count(*) AS count FROM loan_applications WHERE user_id=$1 GROUP BY status", {uid})},
+    auto kyc = db.rows("SELECT status FROM kyc_records WHERE user_id=$1", {uid});
+    Json result = {{"applications", db.rows("SELECT status,count(*) AS count FROM loan_applications WHERE user_id=$1 GROUP BY status", {uid})},
             {"loans", db.one(R"(SELECT count(*) FILTER (WHERE status='active') AS active,
-                coalesce(sum(outstanding) FILTER (WHERE status IN ('active','defaulted')),0) AS outstanding FROM loans WHERE user_id=$1)", {uid})},
+                coalesce(sum(outstanding) FILTER (WHERE status IN ('active','defaulted')),0) AS outstanding,
+                coalesce(sum(principal) FILTER (WHERE status IN ('active','defaulted')),0) AS principal FROM loans WHERE user_id=$1)", {uid})},
             {"next_payment", next.empty() ? Json(nullptr) : next.front()},
+            {"kyc_status", kyc.empty() ? Json(nullptr) : kyc.front().at("status")},
             {"unread", db.one("SELECT count(*) AS n FROM notifications WHERE user_id=$1 AND read_at IS NULL", {uid}).at("n")},
+            {"alerts", db.rows("SELECT id,kind,title,body,link,created_at FROM notifications WHERE user_id=$1 AND read_at IS NULL ORDER BY id DESC LIMIT 3", {uid})},
+            {"transactions", db.rows(R"(SELECT id,'CW-T-'||id AS reference,loan_id,kind,amount,payment_date FROM repayment_transactions
+                WHERE user_id=$1 ORDER BY payment_date DESC,id DESC LIMIT 5)", {uid})},
             {"recent", db.rows(R"(SELECT e.id,e.application_id,e.status,e.action,e.note,e.created_at FROM application_events e
                 JOIN loan_applications a ON a.id=e.application_id WHERE a.user_id=$1 AND e.action NOT IN ('draft_created','draft_saved','review_started')
                 ORDER BY e.id DESC LIMIT 5)", {uid})}};
+    tx.commit();
+    return result;
 }
 }
 
@@ -163,6 +192,10 @@ Json portfolioSummary(Database& db) { return portfolio(db); }
 std::optional<Response> engagementRoutes(Database& db, const Request& req) {
     if (req.path.empty()) return std::nullopt;
     const auto& p = req.path;
+    if (p[0] == "admin" && p.size() == 2 && p[1] == "audit" && req.method == "GET") {
+        authenticate(db, req, Permission::administration);
+        return Response{auditTrail(db, req)};
+    }
     if (p[0] == "admin" && p.size() >= 2 && (p[1] == "fraud" || p[1] == "reports" || p[1] == "overview")) {
         const auto admin = authenticate(db, req, Permission::administration).at("id").dump();
         if (p.size() == 2 && req.method == "GET") {

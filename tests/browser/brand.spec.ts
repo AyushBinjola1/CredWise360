@@ -75,10 +75,11 @@ test('brand appears in the workspace, mobile navigation, sign-in, error page and
  await write(page.request,'auth/register',uniqueUser('brand-ui'));
  await page.setViewportSize({width:1440,height:900});
  // Hold the profile request so the loading state is on screen: it shows the animated icon.
- await page.route('**/api/profile',async route=>{await new Promise(done=>setTimeout(done,1500));await route.continue();});
- await page.goto('/app');
+ await page.route('**/api/notifications',async route=>{await new Promise(done=>setTimeout(done,1500));await route.continue();});
+ await page.goto('/app/notifications');
  await expect(page.locator('.loading .logo-pulse img.logo-light')).toBeVisible();
- await page.unroute('**/api/profile');
+ await page.unroute('**/api/notifications');
+ await page.goto('/app');
  await expect(page.locator('.side .brand img.logo-light')).toBeVisible();
  await setTheme(page,'dark');
  await expect(page.locator('.side .brand img.logo-dark')).toBeVisible();

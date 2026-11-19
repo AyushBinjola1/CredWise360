@@ -35,6 +35,7 @@ Either use the blueprint (**New > Blueprint**, pick this repository, which reads
 | `DEMO_MODE` | `1` for the demo, `0` otherwise | Yes | Creates the demo administrator and borrower on startup |
 | `SEED_DEMO` | `1` | Optional | Loads the demo portfolio after startup through the real API. Safe to repeat. Requires `DEMO_MODE=1`. |
 | `COOKIE_SECURE` | `1` | Yes | Marks the session cookie `Secure` |
+| `DEMO_PROTECT` | `1` for a public demo | Recommended | Keeps the four shared demo accounts fixed: their name, password and status, the scoring policy and product terms (for the demo administrator), and prepayment, advance or full-settlement payments on the demo loan. Visitors who register their own account are unaffected. Leave unset locally. |
 | `TRUST_PROXY` | `1` | Yes | Uses the visitor address passed by the web tier so login limits apply per visitor |
 | `WEB_ORIGINS` | Public https origin, for example `https://credwise-360.onrender.com` | Only for a custom domain | The API accepts writes only from these origins. On Render it is derived from `RENDER_EXTERNAL_URL` when unset. Separate several origins with commas. |
 | `DATABASE_CONNECT_TIMEOUT` | Seconds, default `15` | No | Connection timeout |

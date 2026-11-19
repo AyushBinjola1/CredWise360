@@ -4,10 +4,16 @@ import {Menu,Moon,Sun,X} from 'lucide-react';
 import {Brand} from './brand';
 import Link from 'next/link';
 import {Button} from './ui/button';
+import {applyTheme,currentTheme} from '@/lib/theme';
 export function ThemeToggle(){
  const [dark,setDark]=useState(false);
- useEffect(()=>{setDark(localStorage.getItem('cw-theme')==='dark');},[]);
- return <button className="iconbutton" aria-label={dark?'Use light theme':'Use dark theme'} onClick={()=>{const next=dark?'light':'dark';setDark(!dark);localStorage.setItem('cw-theme',next);document.documentElement.dataset.theme=next;}}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button>;
+ useEffect(()=>{
+  setDark(currentTheme()==='dark');
+  const watch=new MutationObserver(()=>setDark(currentTheme()==='dark'));
+  watch.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  return()=>watch.disconnect();
+ },[]);
+ return <button className="iconbutton" aria-label={dark?'Use light theme':'Use dark theme'} aria-pressed={dark} onClick={()=>applyTheme(dark?'light':'dark')}>{dark?<Sun size={18}/>:<Moon size={18}/>}</button>;
 }
 export function PublicHeader(){
  const menu=useRef<HTMLDialogElement>(null);

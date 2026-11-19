@@ -162,6 +162,7 @@ std::optional<Response> marketRoutes(Database& db,const Request& request) {
         (request.method == "GET" || request.method == "PUT")) {
         auto admin = authenticate(db,request,Permission::administration);
         if (request.method == "GET") return Response{loadProduct(db,path[2])->publicTerms()};
+        blockSharedDemoChange(admin,"product terms");
         return Response{updateProduct(db,admin.at("id").dump(),path[2],request.body)};
     }
     return std::nullopt;

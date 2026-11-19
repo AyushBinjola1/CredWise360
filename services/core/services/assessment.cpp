@@ -105,6 +105,7 @@ std::optional<Response> assessmentRoutes(Database& db, const Request& req) {
         return std::nullopt;
     auto admin = currentUser(db,req,true);
     if (req.method == "GET") return Response{policies(db)};
+    blockSharedDemoChange(admin,"the scoring policy");
     const auto note = field(req.body,"note",400);
     Transaction tx(db);
     db.exec("SELECT pg_advisory_xact_lock(36804362)");

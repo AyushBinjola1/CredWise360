@@ -1,4 +1,5 @@
 #include "repositories/database.hpp"
+#include <chrono>
 #include <set>
 namespace cw {
 namespace {
@@ -22,11 +23,59 @@ std::string databaseConnectionString() {
     if (timeout.find_first_not_of("0123456789") != std::string::npos) throw std::runtime_error("DATABASE_CONNECT_TIMEOUT must be a number of seconds.");
     return withParameter(url, "connect_timeout", timeout);
 }
-Database::Database() : conn_(PQconnectdb(databaseConnectionString().c_str()), PQfinish) {
-    if (!conn_ || PQstatus(conn_.get()) != CONNECTION_OK) throw Error(503,"database_unavailable","Database connection unavailable.");
-    PQsetClientEncoding(conn_.get(), "UTF8");
-    exec("SET TIME ZONE 'UTC'");
+namespace {
+using Clock = std::chrono::steady_clock;
+// One idle connection per worker thread. A connection idle for a while is checked before reuse because a serverless
+// database may have closed it; a broken connection is dropped and replaced.
+struct IdleConnection {
+    PGconn* conn = nullptr;
+    Clock::time_point since{};
+    ~IdleConnection() { if (conn) PQfinish(conn); }
+};
+thread_local IdleConnection idle;
+constexpr auto recheckAfter = std::chrono::seconds(20);
+
+bool usable(PGconn* conn) {
+    if (PQstatus(conn) != CONNECTION_OK) return false;
+    if (Clock::now() - idle.since < recheckAfter) return true;
+    PGresult* result = PQexec(conn, "SELECT 1");
+    const bool ok = result && PQresultStatus(result) == PGRES_TUPLES_OK;
+    if (result) PQclear(result);
+    return ok;
 }
+PGconn* acquire() {
+    if (idle.conn) {
+        PGconn* conn = idle.conn;
+        idle.conn = nullptr;
+        if (usable(conn)) return conn;
+        PQfinish(conn);
+    }
+    PGconn* conn = PQconnectdb(databaseConnectionString().c_str());
+    if (!conn || PQstatus(conn) != CONNECTION_OK) {
+        if (conn) PQfinish(conn);
+        throw Error(503, "database_unavailable", "Database connection unavailable.");
+    }
+    PQsetClientEncoding(conn, "UTF8");
+    if (PGresult* result = PQexec(conn, "SET TIME ZONE 'UTC'")) PQclear(result);
+    return conn;
+}
+void release(PGconn* conn) {
+    if (!conn) return;
+    bool keep = PQstatus(conn) == CONNECTION_OK;
+    if (keep) {
+        const auto state = PQtransactionStatus(conn);
+        if (state == PQTRANS_INTRANS || state == PQTRANS_INERROR) {
+            // A request that stopped mid-transaction must not leak its state to the next one.
+            PGresult* result = PQexec(conn, "ROLLBACK");
+            keep = result && PQresultStatus(result) == PGRES_COMMAND_OK;
+            if (result) PQclear(result);
+        } else keep = state == PQTRANS_IDLE;
+    }
+    if (keep && !idle.conn) { idle.conn = conn; idle.since = Clock::now(); }
+    else PQfinish(conn);
+}
+}
+Database::Database() : conn_(acquire(), release) {}
 Database::Result Database::query(const std::string& sql, const Params& values) {
     std::vector<const char*> params;
     for (auto& value : values) params.push_back(value.c_str());

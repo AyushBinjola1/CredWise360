@@ -20,6 +20,8 @@ services:
         value: "1"           # loads the demo portfolio after startup (safe to repeat)
       - key: COOKIE_SECURE
         value: "1"
+      - key: DEMO_PROTECT
+        value: "1"           # shared demo accounts cannot be locked out or reconfigured by one visitor
       - key: TRUST_PROXY
         value: "1"           # per-visitor login throttling behind Render's proxy
       # WEB_ORIGINS is derived from Render's RENDER_EXTERNAL_URL. Set it only for a custom domain.

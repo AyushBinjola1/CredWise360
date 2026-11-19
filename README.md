@@ -25,7 +25,9 @@ CredWise 360 simulates the full borrowing journey: understanding credit, choosin
 | ![Financial academy](docs/screenshots/06-financial-academy.png) **Bilingual financial academy** | ![Administrator overview](docs/screenshots/07-admin-overview.png) **Administrator overview** |
 | ![Underwriting queue](docs/screenshots/08-underwriting-queue.png) **Underwriting queue** | ![Fairness monitor](docs/screenshots/09-fairness-monitor.png) **Lending fairness monitor** |
 
-The interface is responsive, with light and dark themes. A phone-width view is in [docs/screenshots/10-mobile-dashboard.png](docs/screenshots/10-mobile-dashboard.png).
+| ![Dark theme](docs/screenshots/11-dark-dashboard.png) **Dark theme** | ![Phone layout](docs/screenshots/10-mobile-dashboard.png) **Phone layout (390 px)** |
+
+The interface is responsive from 320 px to 2560 px, and its light and dark themes follow your operating system until you choose one.
 
 ## Features
 
@@ -47,10 +49,17 @@ The interface is responsive, with light and dark themes. A phone-width view is i
 - Financial literacy academy in English and Hindi with quizzes and explanations.
 - Points and badges for learning and responsible repayment. No rule rewards taking or increasing a loan.
 
+**Experience and accessibility**
+- A customer command centre built from your own records: health score, simulated credit score, debt, next EMI, capacity, goals, debt-free progress, recent activity and data-driven next steps.
+- An administrator overview that surfaces what needs attention (underwriting queue, overdue loans, fraud, distress, support tickets, identity reviews).
+- Collapsible sidebar and navigation groups, breadcrumbs, a keyboard-accessible account menu, Ctrl+K page search, sortable server-side tables and labelled cards for data tables on phones.
+- One design system with shared tokens, skeleton loading, short purposeful motion that respects reduced-motion settings, and tabular numerals for money.
+- Automated WCAG 2.2 AA checks (axe-core) with no critical or serious findings on the tested pages, in both themes.
+
 **Oversight and reporting**
 - Fairness monitor using counterfactual tests on equivalent synthetic profiles.
-- Rule-based fraud review, notifications with due-date reminders, dashboards and portfolio reports.
-- PDF documents rendered by the C++ service (financial health, credit assessment, loan statement, closure certificate, planning scenarios, portfolio) and CSV export.
+- Rule-based fraud review, notifications with due-date reminders, dashboards, portfolio reports and an administrator audit trail with CSV and PDF export.
+- PDF documents rendered by the C++ service (financial health, credit assessment, loan statement, closure certificate, application summary, planning scenarios, portfolio, audit) and CSV export.
 
 The [feature ledger](FEATURE_STATUS.md) records what was verified, how, and what is not implemented.
 
@@ -150,7 +159,7 @@ With both services running you can also use `npm run test:api` and `npm run test
 
 ## Limitations
 
-This is an educational simulation. Scores are simulated and independent of any credit bureau. Disbursements, payments and identity checks are synthetic. Known gaps (no screen-reader testing, no email or SMS delivery, container configuration not executed, and others) are listed in the [feature ledger](FEATURE_STATUS.md).
+This is an educational simulation. Scores are simulated and independent of any credit bureau. Disbursements, payments and identity checks are synthetic. Known gaps (no screen-reader testing, no Lighthouse or hosted-site measurements, no email or SMS delivery, container configuration not executed, Hindi text not reviewed by a native speaker, and others) are listed in the [feature ledger](FEATURE_STATUS.md). The shared demo accounts are protected on the hosted site, but ordinary EMI payments on the demo loan still change its balances for every visitor. Registering your own account gives you isolated data. Audit method and measurements: [docs/ux-audit.md](docs/ux-audit.md).
 
 ## Acknowledgements
 

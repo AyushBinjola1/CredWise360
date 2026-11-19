@@ -213,7 +213,8 @@ std::optional<Response> identityRoutes(Database& db, const Request& req) {
         return Response{{{"kyc",record}}};
     }
     require(req.body.contains("active") && req.body.at("active").is_boolean(),"Choose an account status.");
-    auto target = db.one("SELECT role FROM users WHERE id=$1 FOR UPDATE",{id});
+    auto target = db.one("SELECT role,email FROM users WHERE id=$1 FOR UPDATE",{id});
+    blockSharedDemoChange(target,"the demonstration accounts available");
     if (target.at("role") != "customer") throw Error(403,"forbidden","Only customer accounts can be managed here.");
     bool active = req.body.at("active");
     auto user = db.one("UPDATE users SET active=$2,updated_at=now() WHERE id=$1 RETURNING id,name,email,role,active,created_at",

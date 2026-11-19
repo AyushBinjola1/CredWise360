@@ -165,6 +165,48 @@ Response scenario(Database& db, const std::string& uid, const std::string& id, c
     doc.note("Projection based on the inputs you saved. Results are educational estimates.");
     return file(kind + "-plan.pdf", doc);
 }
+Response applicationSummary(Database& db, const std::string& id, const std::string& owner, bool admin) {
+    auto a = db.one(R"(SELECT a.id,a.status,a.tracking_id,a.principal,a.months,a.purpose,a.offer,a.submitted_at,a.created_at,u.name AS applicant,
+        p.name AS product,p.rate_bps FROM loan_applications a JOIN users u ON u.id=a.user_id JOIN loan_products p ON p.slug=a.product_slug
+        WHERE a.id=$1 AND ($2='' OR a.user_id=NULLIF($2,'')::bigint))", {id, owner});
+    PdfDocument doc("Application summary", text(a.at("applicant")) + " - " + (a.at("tracking_id").is_string() ? text(a.at("tracking_id")) : "Application " + id), stamp(db));
+    doc.heading("Request");
+    doc.keyValues({{"Product", text(a.at("product"))}, {"Status", human(text(a.at("status")))}, {"Amount requested", inr(a.at("principal"))},
+                   {"Term", a.at("months").dump() + " months"}, {"Annual interest rate", std::to_string(a.at("rate_bps").get<int>() / 100.0).substr(0, 5) + "%"},
+                   {"Purpose", text(a.at("purpose"))}, {"Created", text(a.at("created_at")).substr(0, 10)},
+                   {"Submitted", a.at("submitted_at").is_string() ? text(a.at("submitted_at")).substr(0, 10) : "Not submitted"}});
+    if (a.at("offer").is_object() && a.at("offer").contains("quote")) {
+        const auto& q = a.at("offer").at("quote");
+        doc.heading("Offered terms");
+        doc.keyValues({{"Monthly instalment (EMI)", inr(q.at("emi"))}, {"Total repayment", inr(q.at("total_repayment"))}, {"Total interest", inr(q.at("total_interest"))},
+                       {"Fees and charges", inr(q.at("fee").get<Money>() + q.at("upfront").get<Money>())}, {"Net amount received", inr(q.at("net_proceeds"))}});
+    }
+    doc.heading("History");
+    std::vector<std::vector<std::string>> rows;
+    for (const auto& e : db.rows(R"(SELECT e.created_at,e.status,e.action,e.note,COALESCE(u.name,'Automated assessment') AS actor
+            FROM application_events e LEFT JOIN users u ON u.id=e.actor_id WHERE e.application_id=$1 ORDER BY e.id)", {id}))
+        rows.push_back({text(e.at("created_at")).substr(0, 10), human(text(e.at("action"))), human(text(e.at("status"))), admin ? text(e.at("actor")) : (e.at("actor") == "Automated assessment" ? "System" : "Reviewer")});
+    doc.table({"Date", "Event", "Status", "By"}, rows, {1.1, 2, 1.6, 1.6});
+    if (admin) {
+        std::vector<std::vector<std::string>> decisions;
+        for (const auto& d : db.rows(R"(SELECT d.created_at,d.action,d.reason_code,d.note,u.name FROM application_decisions d JOIN users u ON u.id=d.reviewer_id WHERE d.application_id=$1 ORDER BY d.id)", {id}))
+            decisions.push_back({text(d.at("created_at")).substr(0, 10), human(text(d.at("action"))), text(d.at("name")), text(d.at("note"))});
+        if (!decisions.empty()) { doc.heading("Underwriting decisions"); doc.table({"Date", "Decision", "Reviewer", "Note"}, decisions, {1.1, 1.3, 1.4, 3.2}); }
+    }
+    doc.note("Summary of the simulated application records at the time of export.");
+    return file("application-" + id + "-summary.pdf", doc);
+}
+Response auditReport(Database& db) {
+    PdfDocument doc("Audit report", "Administrator report - latest 200 recorded actions", stamp(db));
+    std::vector<std::vector<std::string>> rows;
+    for (const auto& r : db.rows(R"(SELECT a.created_at,a.action,actor.name AS actor_name,subject.name AS subject_name FROM identity_audit a
+            LEFT JOIN users actor ON actor.id=a.actor_id LEFT JOIN users subject ON subject.id=a.subject_id ORDER BY a.id DESC LIMIT 200)"))
+        rows.push_back({text(r.at("created_at")).substr(0, 16), text(r.at("action")), r.at("actor_name").is_string() ? text(r.at("actor_name")) : "System", r.at("subject_name").is_string() ? text(r.at("subject_name")) : "-"});
+    doc.heading("Recorded actions");
+    doc.table({"When (UTC)", "Action", "Actor", "Subject"}, rows, {1.5, 2.6, 1.6, 1.6});
+    doc.note("Each administrative and account action is written to this trail when it happens. The export reflects the records at the time it was generated.");
+    return file("audit-report.pdf", doc);
+}
 Response portfolioReport(Database& db) {
     auto p = portfolioSummary(db);
     const auto& t = p.at("totals");
@@ -194,6 +236,8 @@ std::optional<Response> documentRoutes(Database& db, const Request& req) {
     const size_t arg = admin ? 4 : 3;
     const auto name = text(user.at("name"));
     if (admin && kind == "portfolio" && p.size() == 4) return portfolioReport(db);
+    if (admin && kind == "audit" && p.size() == 4) return auditReport(db);
+    if (kind == "application" && p.size() == arg + 1) return applicationSummary(db, numeric(p[arg]), owner, admin);
     if (kind == "loan" && p.size() == arg + 1) return loanStatement(db, numeric(p[arg]), owner);
     if (admin) return std::nullopt;
     if (kind == "health" && p.size() == 3) return healthReport(db, uid, name);

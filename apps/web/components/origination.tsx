@@ -11,6 +11,7 @@ import type { ProfileResult } from '@/lib/model';
 import { readSynthetic, saveSynthetic, type SyntheticDocument } from '@/lib/synthetic-document';
 import { Button } from './ui/button';
 import { Empty, Failure, Loading, Metric, PageHeading } from './states';
+import { PdfButton } from './pdf-button';
 import './origination.css';
 
 type Stage = 'draft'|'submitted'|'under_review'|'requires_information'|'approved'|'rejected'|'accepted'|'disbursed'|'active'|'closed'|'defaulted'|'withdrawn';
@@ -248,7 +249,7 @@ function TrackingHeader({ data, back, admin = false }: { data:ApplicationDetail;
   const app=data.application;
   return <><Link className="orig-back" href={back}><ArrowLeft size={15}/>{admin?'Underwriting queue':'All applications'}</Link>
     <PageHeading kicker={admin?'Underwriting record':'Application tracking'} title={app.product_name || data.assessment?.product.name || human(app.product_slug)+' loan'}
-      description={(admin && app.applicant_name ? app.applicant_name+' · ' : '')+reference(app)} action={<StageBadge status={app.status}/>}/>
+      description={(admin && app.applicant_name ? app.applicant_name+' · ' : '')+reference(app)} action={<div className="buttonrow"><StageBadge status={app.status}/><PdfButton path={(admin?'admin/reports/pdf/application/':'reports/pdf/application/')+app.id} label="Summary PDF"/></div>}/>
     <div className="metricgrid orig-summary"><Metric label="Requested principal" value={money(app.principal)}/><Metric label="Repayment term" value={app.months+' months'}/>
       <Metric label="Last activity" value={date(app.updated_at)}/></div></>;
 }
@@ -291,11 +292,15 @@ function NewApplication() {
 const allFilters={q:'',status:'',product:'',risk:'',priority:''};
 function ApplicationList({ admin = false }: { admin?:boolean }) {
   const [draft,setDraft]=useState(allFilters),[filters,setFilters]=useState(allFilters),[page,setPage]=useState(1);
+  const [sort,setSort]=useState<{key:string;dir:'asc'|'desc'}|null>(null);
   const products=useResource<{items:Product[]}>('products');
   const params=new URLSearchParams({page:String(page),page_size:'12'});
   for(const [key,value] of Object.entries(filters))if(value)params.set(key,value);
+  if(sort){params.set('sort',sort.key);params.set('dir',sort.dir);}
   const base=admin?'/admin/applications':'/app/applications';
   const query=useResource<PageResult>((admin?'admin/':'')+'applications?'+params.toString());
+  function toggleSort(key:string){setPage(1);setSort(s=>!s||s.key!==key?{key,dir:'asc'}:s.dir==='asc'?{key,dir:'desc'}:null);}
+  const sortHead=(key:string,label:string)=><th scope="col" aria-sort={sort?.key===key?(sort.dir==='asc'?'ascending':'descending'):undefined}><button type="button" className="sort-button" onClick={()=>toggleSort(key)}>{label}<span aria-hidden="true">{sort?.key===key?(sort.dir==='asc'?'▲':'▼'):'↕'}</span></button></th>;
   function update(key:keyof typeof allFilters,value:string){setDraft(previous=>({...previous,[key]:value}));}
   return <div className="orig-page"><PageHeading kicker={admin?'Operations':'Borrower workspace'} title={admin?'Underwriting queue':'Loan applications'}
     description={admin?'Review requests, inspect evidence and record a decision for each application.':'Track your requests from the first draft to an active loan account.'}
@@ -312,8 +317,8 @@ function ApplicationList({ admin = false }: { admin?:boolean }) {
     {query.isPending?<Loading/>:query.error?<Failure message={errText(query.error)} retry={()=>query.refetch()}/>:query.data.items.length===0 ?
       <Empty title="No matching applications">{admin?'Submitted requests appear here when they match the filters.':'Create a draft or adjust the filters to find an existing request.'}</Empty>:
       <section className="panel orig-panel orig-list"><div className="panelhead"><h2>{query.data.total} {query.data.total===1?'application':'applications'}</h2><ClipboardCheck size={19}/></div>
-        <div className="tablewrap" role="region" aria-label="Application records" tabIndex={0}><table className="datatable"><thead><tr><th scope="col">Application</th>{admin&&<th scope="col">Applicant</th>}
-          <th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Updated</th><th scope="col">Details</th></tr></thead>
+        <div className="tablewrap" role="region" aria-label="Application records" tabIndex={0}><table className="datatable"><caption className="sr-only">Application records. Use the column buttons to sort.</caption><thead><tr>{sortHead('product','Application')}{admin&&sortHead('applicant','Applicant')}
+          {sortHead('amount','Amount')}{sortHead('status','Status')}{sortHead('updated','Updated')}<th scope="col">Details</th></tr></thead>
           <tbody>{query.data.items.map(app=><tr key={app.id}><td><strong>{app.product_name || human(app.product_slug)}</strong><small>{reference(app)}</small></td>{admin&&<td>{app.applicant_name}</td>}
             <td>{money(app.principal)}</td><td><StageBadge status={app.status}/>{app.escalated&&<small>Escalated</small>}</td><td>{date(app.updated_at)}</td>
             <td><Link className="under" href={base+'/'+app.id} aria-label={'Open '+reference(app)}>Open</Link></td></tr>)}</tbody></table></div>

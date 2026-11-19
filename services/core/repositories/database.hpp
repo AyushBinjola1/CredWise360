@@ -13,7 +13,8 @@ public:
 };
 class Database final : public Repository {
     using Result = std::unique_ptr<PGresult, decltype(&PQclear)>;
-    std::unique_ptr<PGconn, decltype(&PQfinish)> conn_;
+    // Connections return to a per-thread cache instead of closing, which avoids a TLS handshake per request.
+    std::unique_ptr<PGconn, void (*)(PGconn*)> conn_;
     Result query(const std::string&, const Params&);
 public:
     Database();
