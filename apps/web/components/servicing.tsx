@@ -8,6 +8,7 @@ import {Button} from './ui/button';
 import {Empty,Failure,Loading,Metric,PageHeading} from './states';
 import {ExportTools} from './exports';
 import {LoanPayment} from './loan-payment';
+import {PdfButton} from './pdf-button';
 import './servicing.css';
 
 function LoanDirectory({admin,repayments}:{admin:boolean;repayments:boolean}){
@@ -34,14 +35,14 @@ function Ledger({transactions}:{transactions:PostedTransaction[]}){
  return <><div className="tablewrap"><table className="datatable"><caption className="sr-only">Permanent repayment transactions</caption><thead><tr>{['Reference','Payment date','Type','Borrower cash flow','Principal posted','Interest','Penalty','Fee'].map(s=><th key={s} scope="col">{s}</th>)}</tr></thead><tbody>{transactions.map(t=><tr key={t.id}><th scope="row">{t.reference}</th><td>{date(t.payment_date)}</td><td>{t.kind==='disbursement'?'Simulated disbursement':paymentLabels[t.kind]}</td><td>{money(t.kind==='disbursement'?t.amount:-t.amount)}</td><td>{money(t.principal)}</td><td>{money(t.interest)}</td><td>{money(t.penalty)}</td><td>{money(t.fee)}</td></tr>)}</tbody></table></div>
  <ExportTools name="loan-statement" columns={['Reference','Date','Type','Borrower cash flow (paise)','Principal (paise)','Interest (paise)','Penalty (paise)','Fee (paise)']} rows={transactions.map(t=>[t.reference,t.payment_date,t.kind,t.kind==='disbursement'?t.amount:-t.amount,t.principal,t.interest,t.penalty,t.fee])}/></>;
 }
-function Closure({data,back}:{data:Certificate;back:string}){return <><Link className="textlink no-print" href={back}><ArrowLeft size={15}/> Loan details</Link><article className="closure-doc"><div className="certificate-mark"><BadgeCheck size={31}/></div><span className="eyebrow">CredWise 360 · Loan servicing</span><h1>{data.title}</h1><p className="cert-ref">{data.reference}</p><p>CredWise records this simulated loan as closed on {date(data.closed_on)}.</p><dl className="service-facts">{certificateRows(data).map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl><small>{data.disclaimer}</small></article><div className="buttonrow"><Button onClick={()=>downloadCertificate(data)}><Download size={16}/>Download certificate</Button><Button variant="outline" onClick={()=>window.print()}><Printer size={16}/>Print certificate</Button></div></>;}
+function Closure({data,back,admin}:{data:Certificate;back:string;admin:boolean}){return <><Link className="textlink no-print" href={back}><ArrowLeft size={15}/> Loan details</Link><article className="closure-doc"><div className="certificate-mark"><BadgeCheck size={31}/></div><span className="eyebrow">CredWise 360 · Loan servicing</span><h1>{data.title}</h1><p className="cert-ref">{data.reference}</p><p>CredWise records this simulated loan as closed on {date(data.closed_on)}.</p><dl className="service-facts">{certificateRows(data).map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl><small>{data.disclaimer}</small></article><div className="buttonrow"><PdfButton size="default" path={admin?'admin/reports/pdf/loan/'+data.loan_id:'reports/pdf/certificate/'+data.loan_id} label={admin?'Download PDF statement':'Download PDF certificate'}/><Button variant="outline" onClick={()=>downloadCertificate(data)}><Download size={16}/>Download certificate</Button><Button variant="outline" onClick={()=>window.print()}><Printer size={16}/>Print certificate</Button></div></>;}
 function CertificatePage({admin,id}:{admin:boolean;id:string}){
  const base=admin?'/admin/loans':'/app/loans';
  const own=useResource<Certificate>('loans/'+id+'/certificate',!admin),staff=useResource<LoanDetail>('admin/loans/'+id,admin);
  const q=admin?staff:own;
  if(q.isPending)return <Loading/>;if(q.error)return <Failure message={q.error.message}/>;
  const certificate=admin?staff.data?.certificate:own.data;
- return certificate?<Closure data={certificate} back={base+'/'+id}/>:<Empty title="Certificate unavailable">A certificate is issued when the loan closes.</Empty>;
+ return certificate?<Closure data={certificate} back={base+'/'+id} admin={admin}/>:<Empty title="Certificate unavailable">A certificate is issued when the loan closes.</Empty>;
 }
 function LoanAccount({admin,id}:{admin:boolean;id:string}){
  const base=admin?'/admin/loans':'/app/loans',q=useResource<LoanDetail>((admin?'admin/loans/':'loans/')+id);
@@ -49,7 +50,7 @@ function LoanAccount({admin,id}:{admin:boolean;id:string}){
  useEffect(()=>{setReceipt(null);setTab('schedule');},[id]);
  if(q.isPending)return <Loading/>;if(q.error)return <Failure message={q.error.message} retry={()=>q.refetch()}/>;
  const {loan:l,schedule,transactions,penalties}=q.data;
- return <><Link href={base} className="textlink"><ArrowLeft size={15}/> {admin?'Loan portfolio':'My loans'}</Link><PageHeading kicker={'Loan account '+l.id} title={l.product_name} description={(admin?l.borrower_name+' · ':'')+'Opened '+date(l.opened_on)+' · Application '+l.application_id}/>
+ return <><Link href={base} className="textlink"><ArrowLeft size={15}/> {admin?'Loan portfolio':'My loans'}</Link><PageHeading kicker={'Loan account '+l.id} title={l.product_name} description={(admin?l.borrower_name+' · ':'')+'Opened '+date(l.opened_on)+' · Application '+l.application_id} action={<PdfButton path={(admin?'admin/reports/pdf/loan/':'reports/pdf/loan/')+l.id} label="Statement PDF"/>}/>
  <div className="balance"><div><span className="eyebrow"><i/>{human(l.status)} · Outstanding principal</span><strong>{money(l.outstanding)}</strong><p>Original principal {money(l.principal)} · {(l.rate_bps/100).toFixed(2)}% annual interest</p></div><div className="service-progress"><label htmlFor={'progress-'+l.id}>Principal repaid</label><progress id={'progress-'+l.id} max="100" value={l.progress}/><span>{l.progress.toFixed(1)}%</span></div></div>
  <div className="metricgrid"><Metric label="Contractual EMI" value={money(l.emi)}/><Metric label="Next due" value={l.next_due_date?date(l.next_due_date):'Settled'} detail={l.next_due_date?money(l.next_amount):undefined}/><Metric label="Remaining instalments" value={l.remaining_months}/><Metric label="Total paid" value={money(l.total_paid)} detail={'Interest paid '+money(l.interest_paid)}/></div>
  {receipt&&<div className="notice" role="status"><CheckCircle2 size={20}/><div><strong>Payment recorded · {money(receipt.transaction.amount)}</strong><p>{receipt.transaction.reference} · {date(receipt.transaction.payment_date)}</p></div></div>}

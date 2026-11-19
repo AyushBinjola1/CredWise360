@@ -17,7 +17,7 @@ export async function GuardedPage({role,parts}:{role:Role;parts:string[]}){
  if(parts.length>1){
   const [,id,document]=parts;
   const numeric=/^[1-9][0-9]{0,17}$/.test(id);
-  const valid=(slug==='market'&&parts.length===2)||(slug==='applications'&&parts.length===2&&(numeric||(role==='customer'&&id==='new')))||(slug==='loans'&&numeric&&(parts.length===2||(parts.length===3&&document==='certificate')));
+  const valid=(slug==='market'&&parts.length===2)||(slug==='applications'&&parts.length===2&&(numeric||(role==='customer'&&id==='new')))||(slug==='disputes'&&parts.length===2&&numeric)||(slug==='academy'&&role==='customer'&&parts.length===2&&/^[a-z0-9-]{1,60}$/.test(id))||(slug==='loans'&&numeric&&(parts.length===2||(parts.length===3&&document==='certificate')));
   if(!valid)notFound();
  }
  return <WorkspaceShell user={user} slug={slug}><WorkspaceContent user={user} slug={slug} parts={parts.slice(1)}/></WorkspaceShell>;

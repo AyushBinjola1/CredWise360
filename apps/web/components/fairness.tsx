@@ -1,0 +1,39 @@
+'use client';
+import {useMutation,useQueryClient} from '@tanstack/react-query';
+import {CheckCircle2,Scale,XCircle} from 'lucide-react';
+import {api,date,errText,human,useResource} from '@/lib/api';
+import {Button} from './ui/button';
+import {ExportTools} from './exports';
+import {Empty,Failure,Loading,Metric,PageHeading} from './states';
+import './oversight.css';
+
+interface Variant{label:string;attributes:Record<string,string>;outcome:{score:number|null;risk:string;capacity:number;strategy:string;reason_codes:string[]};products:Record<string,{eligible:boolean;compatibility:number}>}
+interface Result{consistent:boolean;max_score_difference:number;comparisons:number;excluded:string[];policy_version:number;
+ tests:{persona:string;identical:boolean;variants:Variant[]}[];sensitivity:{persona:string;change:string;score_before:number|null;score_after:number|null;capacity_before:number;capacity_after:number;changed:boolean}[];
+ policy_checks:{check:string;passed:boolean;detail?:string}[]}
+interface Overview{latest:{id:number;created_at:string;consistent:boolean;result:Result}|null;history:{id:number;policy_id:number;consistent:boolean;created_at:string}[];
+ stats:{human_review:{total:number;review:number};risk_bands:{risk:string;count:number}[];decisions:{action:string;count:number}[];rejection_reasons:{reason:string;count:number}[];
+  policy:{id:number;conventional_weights:Record<string,number>;alternative_weights:Record<string,number>;thresholds:Record<string,number>};policy_history:{id:number;note:string;created_at:string;author:string|null}[]}}
+const Pass=({ok}:{ok:boolean})=>ok?<span className="same"><CheckCircle2 size={15} aria-hidden/> Identical</span>:<span className="diff"><XCircle size={15} aria-hidden/> Differs</span>;
+
+export function FairnessPage(){
+ const q=useResource<Overview>('admin/fairness'),cache=useQueryClient();
+ const run=useMutation({mutationFn:()=>api<Overview>('admin/fairness/run',{}),onSuccess:()=>cache.invalidateQueries({queryKey:['api','admin/fairness']})});
+ if(q.isPending)return <Loading/>;if(q.error)return <Failure message={q.error.message} retry={()=>q.refetch()}/>;
+ const o=q.data,r=o.latest?.result,s=o.stats;
+ return <><PageHeading kicker="Governance" title="Lending fairness monitor" description="Tests whether irrelevant attributes change a decision, using equivalent synthetic profiles that differ in only one respect." action={<Button disabled={run.isPending} onClick={()=>run.mutate()}><Scale size={16}/>{run.isPending?'Running tests…':'Run fairness test'}</Button>}/>
+ {run.error&&<Failure message={errText(run.error)}/>}
+ {!r?<Empty title="No test has been run">Run the counterfactual test to record a result against the current scoring policy.</Empty>:<>
+ <section className={'panel verdict '+(r.consistent?'':'bad')} role="status"><span className="eyebrow">Latest run · {date(o.latest!.created_at)} · policy version {r.policy_version}</span><h2>{r.consistent?'Protected attributes did not change any outcome':'Outcomes differed between equivalent profiles'}</h2><p>{r.comparisons} comparisons across {r.tests.length} profiles and 8 loan products. Largest score difference: {r.max_score_difference} points. Attributes tested: {r.excluded.map(human).join(', ')}.</p></section>
+ <div className="metricgrid"><Metric label="Profiles tested" value={r.tests.length}/><Metric label="Comparisons" value={r.comparisons}/><Metric label="Max score gap" value={r.max_score_difference}/><Metric label="Policy checks passed" value={r.policy_checks.filter(c=>c.passed).length+' / '+r.policy_checks.length}/></div>
+ {r.tests.map(t=><section className="panel" key={t.persona}><div className="panelhead"><h2>{t.persona}</h2><Pass ok={t.identical}/></div><div className="tablewrap"><table className="datatable fair-table"><caption className="sr-only">{t.persona}: outcome for each variant</caption><thead><tr><th scope="col">Variant</th><th scope="col">Attributes changed</th><th scope="col">Score</th><th scope="col">Risk</th><th scope="col">Products eligible</th></tr></thead><tbody>{t.variants.map(v=><tr key={v.label}><th scope="row">{v.label}</th><td>{Object.keys(v.attributes).length?Object.values(v.attributes).join(', '):'None (baseline)'}</td><td>{v.outcome.score??'Needs evidence'}</td><td>{human(v.outcome.risk)}</td><td>{Object.values(v.products).filter(p=>p.eligible).length} of {Object.keys(v.products).length}</td></tr>)}</tbody></table></div></section>)}
+ <div className="splitgrid"><section className="panel"><div className="panelhead"><h2>Control tests</h2></div><p className="muted">A relevant financial change should move the result. This proves the test is able to detect influence.</p><div className="tablewrap"><table className="datatable"><thead><tr><th scope="col">Change</th><th scope="col">Score</th><th scope="col">Moved</th></tr></thead><tbody>{r.sensitivity.map((x,i)=><tr key={i}><th scope="row">{x.persona.split(',')[0]} · {x.change}</th><td>{x.score_before??'–'} → {x.score_after??'–'}</td><td>{x.changed?'Yes':'No'}</td></tr>)}</tbody></table></div></section>
+ <section className="panel"><div className="panelhead"><h2>Policy checks</h2></div><ul className="check-list">{r.policy_checks.map(c=><li key={c.check}>{c.passed?<CheckCircle2 size={17} className="ck-pass" aria-hidden/>:<XCircle size={17} className="ck-fail" aria-hidden/>}<div><strong>{c.check}</strong><span className="sr-only">{c.passed?' — passed':' — failed'}</span>{c.detail&&<p>{c.detail}</p>}</div></li>)}</ul></section></div></>}
+ <div className="splitgrid"><section className="panel"><div className="panelhead"><h2>Observed outcomes</h2></div>
+  <div className="historylist"><div><span>Assessments sent to human review</span><strong>{s.human_review.total?Math.round(100*s.human_review.review/s.human_review.total)+'% ('+s.human_review.review+' of '+s.human_review.total+')':'No assessments yet'}</strong></div>{s.risk_bands.map(b=><div key={b.risk}><span>Risk band: {human(b.risk)}</span><strong>{b.count}</strong></div>)}{s.decisions.map(d=><div key={d.action}><span>Underwriting decision: {human(d.action)}</span><strong>{d.count}</strong></div>)}</div>
+  <div className="panelhead"><h2>Rejection reasons</h2></div>{s.rejection_reasons.length?<div className="historylist">{s.rejection_reasons.map(x=><div key={x.reason}><span>{human(x.reason)}</span><strong>{x.count}</strong></div>)}</div>:<Empty title="No rejections recorded"/>}
+  <ExportTools name="fairness-outcomes" columns={['Measure','Value']} rows={[['Assessments',s.human_review.total],['Human review',s.human_review.review],...s.decisions.map(d=>['Decision: '+d.action,d.count]),...s.rejection_reasons.map(x=>['Rejection: '+x.reason,x.count])]}/></section>
+ <section className="panel"><div className="panelhead"><h2>Policy in force</h2></div><p className="muted">Version {s.policy.id}. Factor weights are configurable by administrators and every change is recorded.</p><div className="historylist">{Object.entries(s.policy.conventional_weights).map(([k,v])=><div key={k}><span>{human(k)} (conventional)</span><strong>{v}%</strong></div>)}{Object.entries(s.policy.alternative_weights).map(([k,v])=><div key={k}><span>{human(k)} (alternative)</span><strong>{v}%</strong></div>)}</div>
+  <div className="panelhead"><h2>Policy change history</h2></div><div className="historylist">{s.policy_history.map(p=><div key={p.id}><span>v{p.id} · {date(p.created_at)} · {p.author||'System'}</span><span>{p.note}</span></div>)}</div></section></div>
+ <section className="panel"><div className="panelhead"><h2>Test history</h2></div>{o.history.length?<div className="historylist">{o.history.map(h=><div key={h.id}><span>Run {h.id} · {date(h.created_at)}</span><strong>{h.consistent?'Consistent':'Differences found'} · policy v{h.policy_id}</strong></div>)}</div>:<Empty title="No runs yet"/>}</section></>;
+}

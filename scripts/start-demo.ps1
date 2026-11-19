@@ -46,6 +46,7 @@ if (-not $ready) { throw 'The app did not become ready. Inspect .local\logs\api.
 # 4. Demonstration data (safe to repeat)
 $env:WEB_URL = 'http://127.0.0.1:3000'
 node scripts\seed-demo.mjs
+node scripts\seed-demo-extras.mjs
 Write-Host ''
 Write-Host 'CredWise 360 is running at http://127.0.0.1:3000'
 Write-Host 'Borrower: borrower@credwise.test   Administrator: admin@credwise.test   Password: CredWiseDemo!360'

@@ -3,14 +3,14 @@ import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useQueryClient} from '@tanstack/react-query';
-import {Activity,ArrowLeftRight,Banknote,BarChart3,Bell,BookOpen,Building2,CalendarDays,ChartNoAxesCombined,ChevronRight,CircleHelp,ClipboardList,Compass,FileCheck2,FileText,Flag,GraduationCap,HeartPulse,Home,IdCard,Layers,LogOut,Menu,MessagesSquare,Scale,Search,Settings,Shield,SlidersHorizontal,Target,Users,Wallet,X,type LucideIcon} from 'lucide-react';
+import {Activity,Award,ArrowLeftRight,Banknote,BarChart3,Bell,BookOpen,Building2,CalendarDays,ChartNoAxesCombined,ChevronRight,CircleHelp,ClipboardList,Compass,FileCheck2,FileText,Flag,GraduationCap,HeartPulse,Home,IdCard,Layers,LogOut,Menu,MessagesSquare,Scale,Search,Settings,Shield,SlidersHorizontal,Target,Users,Wallet,X,type LucideIcon} from 'lucide-react';
 import {api,errText,useResource} from '@/lib/api';
 import type {User} from '@/lib/model';
 import {destinations,baseFor} from '@/lib/routes';
 import {Brand} from './brand';
 import {ThemeToggle} from './public-header';
 import {Failure} from './states';
-const icons:Record<string,LucideIcon>={home:Home,wallet:Wallet,identity:IdCard,settings:Settings,users:Users,credit:Activity,twin:Layers,market:Building2,application:ClipboardList,loans:Banknote,debt:Target,stress:HeartPulse,education:GraduationCap,safety:Shield,academy:BookOpen,alerts:Bell,reports:FileText,support:MessagesSquare,fraud:Flag,fairness:Scale,analytics:BarChart3,checks:FileCheck2,comparison:ArrowLeftRight,planner:Compass,calendar:CalendarDays,policy:SlidersHorizontal};
+const icons:Record<string,LucideIcon>={home:Home,wallet:Wallet,identity:IdCard,settings:Settings,users:Users,credit:Activity,twin:Layers,market:Building2,application:ClipboardList,loans:Banknote,debt:Target,stress:HeartPulse,education:GraduationCap,safety:Shield,academy:BookOpen,alerts:Bell,reports:FileText,support:MessagesSquare,fraud:Flag,fairness:Scale,analytics:BarChart3,checks:FileCheck2,comparison:ArrowLeftRight,planner:Compass,calendar:CalendarDays,policy:SlidersHorizontal,rewards:Award,wellbeing:HeartPulse};
 function Bellbadge(){const q=useResource<{unread:number}>('dashboard');const n=q.data?.unread??0;return <Link href="/app/notifications" className="iconbutton" aria-label={n?n+' unread notifications':'Notifications'} style={{position:'relative'}}><Bell size={17}/>{n>0&&<span aria-hidden style={{position:'absolute',top:-4,right:-4,minWidth:17,height:17,borderRadius:9,background:'#b3402f',color:'#fff',fontSize:10,display:'grid',placeItems:'center',padding:'0 4px'}}>{n>9?'9+':n}</span>}</Link>;}
 export function WorkspaceShell({user,slug,children}:{user:User;slug:string;children:React.ReactNode}){
  const router=useRouter(),cache=useQueryClient(),nav=destinations(user.role),base=baseFor(user.role),current=nav.find(x=>x.slug===slug);

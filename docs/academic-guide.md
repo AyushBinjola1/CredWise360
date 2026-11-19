@@ -19,6 +19,13 @@ A browser form submits a same-origin request to the Next.js API handler. The han
 | Factory and ownership | `services/core/domain/loan.cpp`, `LoanFactory::make` | A slug selects one of eight constructors through a hash map. A smart pointer owns the resulting loan policy and virtual methods apply product-specific review rules. |
 | Composition and numerical algorithms | `services/core/engines/emi.cpp`, `EMIEngine`, `AmortizationSchedule` and `Installment` | Build the month-by-month schedule, trace final-paise reconciliation and solve effective cost by bisection over the actual scheduled payments. |
 | Sorting and deterministic ties | `services/core/services/market.cpp`, `recommended` | Rank eligible products and alternatives by compatibility, total borrowing cost and catalogue order. The recommendation keeps the requested principal and term. |
+| State machine | `domain/application.cpp`, `LoanApplication`, and `domain/dispute.cpp`, `DisputeTicket` | A transition table in a map of sets rejects illegal moves with HTTP 409. Both the loan lifecycle and the support ticket lifecycle use the same idea. |
+| Interface-based rules (Strategy) | `engines/safety.hpp`, `SafetyRule`; `engines/distress.hpp`, `DistressIndicator`; `services/learning.cpp`, `RewardRule` | Each rule is a small class behind one virtual method. The engine keeps a vector of `unique_ptr` rules and applies them in turn, so adding a rule never touches the others. |
+| Root finding | `engines/safety.cpp`, `internalRate` | The effective borrowing cost is the rate at which the repayment stream discounts to the net amount received. Bisection over 200 iterations solves it, and a zero-rate offer is checked to return exactly zero. |
+| Simulation and greedy allocation | `engines/planner.cpp`, `DebtNavigator::plan` | Month-by-month integer simulation. Avalanche targets the highest rate and snowball the smallest balance. A baseline run with no rollover shows interest saved, and a never-amortizing debt is detected instead of looping. |
+| Counterfactual testing | `engines/fairness.cpp`, `FairnessAuditor` | Equivalent profiles differing only in protected attributes must give identical outcomes. Control changes that must move the score prove the test can detect influence. |
+| Binary file format and RAII-free serialization | `engines/pdf.cpp`, `PdfDocument` | A PDF is written with byte-exact cross-reference offsets, wrapped text and paginated tables. The native test re-reads every offset. |
+| Idempotency and locking | `services/servicing.cpp`, `postPayment` | A key plus the stored request body makes retries safe. Profile, application and loan rows are locked in one fixed order to avoid deadlock. |
 
 ## Questions for the viva
 

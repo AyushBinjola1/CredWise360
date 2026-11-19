@@ -5,6 +5,7 @@ import {useMutation,useQueryClient} from '@tanstack/react-query';
 import {ArrowDownRight,ArrowUpRight,Save,Sparkles} from 'lucide-react';
 import {api,date,errText,human,money,useResource} from '@/lib/api';
 import {Button} from './ui/button';
+import {PdfButton} from './pdf-button';
 import {Empty,Failure,Loading,Metric,PageHeading} from './states';
 import './planning.css';
 const TrendChart=dynamic(()=>import('./trend-chart'),{ssr:false});
@@ -24,7 +25,7 @@ function SaveScenario({kind,input,disabled}:{kind:Kind;input:unknown;disabled?:b
 function SavedList({kind}:{kind:Kind}){
  const q=useResource<{items:Saved[]}>('planning/scenarios');
  const items=(q.data?.items||[]).filter(s=>s.kind===kind);
- return <section className="panel"><div className="panelhead"><h2>Saved scenarios</h2></div>{q.isPending?<Loading/>:!items.length?<Empty title="Nothing saved yet">Run the tool and save a scenario to compare options later.</Empty>:<div className="historylist">{items.map(s=><div key={s.id}><strong>{s.name}</strong><span>{date(s.created_at)}</span></div>)}</div>}</section>;
+ return <section className="panel"><div className="panelhead"><h2>Saved scenarios</h2></div>{q.isPending?<Loading/>:!items.length?<Empty title="Nothing saved yet">Run the tool and save a scenario to compare options later.</Empty>:<div className="historylist">{items.map(s=><div key={s.id}><strong>{s.name}</strong><span>{date(s.created_at)}</span><PdfButton path={'reports/pdf/scenario/'+s.id} label="PDF"/></div>)}</div>}</section>;
 }
 function Delta({value,unit=''}:{value:number|null;unit?:string}){
  if(value===null||value===0)return <span className="delta">No change</span>;

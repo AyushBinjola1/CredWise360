@@ -342,6 +342,14 @@ void closeLoanApplication(Database& db,const std::string& id,const std::string& 
     if (row.at("status")==target) return;
     transition(db,row,target,actor,target,defaulted?"The servicing review recorded a default.":"The loan principal and outstanding charges are fully settled.");
 }
+void reconsiderApplication(Database& db,const std::string& id,const std::string& actor,const std::string& note) {
+    auto owner=ownerOf(application(db,id,""));
+    profileLock(db,owner);
+    auto row=application(db,id,"",true);
+    if (row.at("status")!="rejected") throw Error(409,"application_state","Only a rejected application can be reconsidered.");
+    db.exec("UPDATE loan_applications SET assessment=$2::jsonb,escalated=true WHERE id=$1",{id,snapshot(db,row).dump()});
+    transition(db,row,"under_review",actor,"reconsideration_requested",note);
+}
 std::optional<Response> originationRoutes(Database& db,const Request& req) {
     if (req.path.empty()) return std::nullopt;
     const bool admin=req.path.size()>=2 && req.path[0]=="admin" && req.path[1]=="applications";

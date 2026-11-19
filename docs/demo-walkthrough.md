@@ -22,3 +22,12 @@ The [acceptance matrix](acceptance-matrix.md) describes all eight evaluation jou
 2. As the administrator, open **Underwriting queue**, review the education application with its synthetic documents and approve or reject it. The borrower receives a notification. Open **Fraud review** and **Portfolio reports** to see figures calculated from the same ledger.
 3. As the borrower, open **Credit score twin**, run a preset such as *Lower credit utilization* and compare factor scores. Your saved profile does not change. Then run **Stress test** (Job loss), **Debt freedom** (compare avalanche and snowball for the funded loan plus an added card) and **Education planner**. Save any scenario and reload to confirm it persists.
 4. Sign in as `diya.nair@credwise.test` to see a rejection with a recovery roadmap and reassessment path.
+
+## Protection, support, learning and fairness
+
+1. As the borrower, open **Loan safety scanner**, choose **Load an example offer** and scan it. The effective annual cost is far above the advertised rate, each warning explains itself, and the checklist shows what to ask the lender. Nothing is saved.
+2. Open **Wellbeing check** for plain-language indicators and a link to support. It never changes the score.
+3. Open **Financial academy**, switch to हिन्दी, answer a quiz and read the explanation. Progress and points persist in **Rewards**. Taking or applying for a loan earns nothing.
+4. Sign in as `diya.nair@credwise.test` and open **Support & disputes**. The reconsideration ticket is waiting for her reply. As the administrator, open **Support tickets** to see the same history, respond and resolve. Resolving with reconsideration sends the rejected application back to underwriting.
+5. As the administrator, open **Fairness monitor** and run the test. Equivalent profiles that differ only in protected attributes give identical outcomes, while the control changes move the score.
+6. Open **My reports** and download the financial health PDF, a loan statement, or a closure certificate after settling a loan. Administrators can download the portfolio PDF from **Portfolio reports**.

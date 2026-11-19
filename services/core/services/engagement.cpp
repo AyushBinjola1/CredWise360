@@ -158,6 +158,8 @@ void notify(Database& db, const std::string& uid, const std::string& kind, const
             {uid, kind, title, body, link, dedupe});
 }
 
+Json portfolioSummary(Database& db) { return portfolio(db); }
+
 std::optional<Response> engagementRoutes(Database& db, const Request& req) {
     if (req.path.empty()) return std::nullopt;
     const auto& p = req.path;
