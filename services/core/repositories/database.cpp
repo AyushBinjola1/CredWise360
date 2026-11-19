@@ -1,6 +1,28 @@
 #include "repositories/database.hpp"
+#include <set>
 namespace cw {
-Database::Database() : conn_(PQconnectdb(setting("DATABASE_URL").c_str()), PQfinish) {
+namespace {
+bool isUri(const std::string& value) { return value.rfind("postgresql://", 0) == 0 || value.rfind("postgres://", 0) == 0; }
+std::string withParameter(const std::string& url, const std::string& key, const std::string& value) {
+    if (url.find(key + "=") != std::string::npos) return url;
+    if (isUri(url)) return url + (url.find('?') == std::string::npos ? "?" : "&") + key + "=" + value;
+    return url + " " + key + "=" + value;
+}
+}
+std::string databaseConnectionString() {
+    std::string url = setting("DATABASE_URL");
+    if (url.empty()) throw std::runtime_error("Set DATABASE_URL before starting CredWise.");
+    const auto mode = setting("DATABASE_SSLMODE");
+    if (!mode.empty()) {
+        static const std::set<std::string> allowed = {"disable", "allow", "prefer", "require", "verify-ca", "verify-full"};
+        if (!allowed.contains(mode)) throw std::runtime_error("DATABASE_SSLMODE must be disable, allow, prefer, require, verify-ca or verify-full.");
+        url = withParameter(url, "sslmode", mode);
+    }
+    const auto timeout = setting("DATABASE_CONNECT_TIMEOUT", "15");
+    if (timeout.find_first_not_of("0123456789") != std::string::npos) throw std::runtime_error("DATABASE_CONNECT_TIMEOUT must be a number of seconds.");
+    return withParameter(url, "connect_timeout", timeout);
+}
+Database::Database() : conn_(PQconnectdb(databaseConnectionString().c_str()), PQfinish) {
     if (!conn_ || PQstatus(conn_.get()) != CONNECTION_OK) throw Error(503,"database_unavailable","Database connection unavailable.");
     PQsetClientEncoding(conn_.get(), "UTF8");
     exec("SET TIME ZONE 'UTC'");

@@ -15,6 +15,14 @@ std::vector<std::string> parts(const std::string& value,char separator) {
     for (std::string piece; std::getline(stream,piece,separator);) if (!piece.empty()) result.push_back(piece);
     return result;
 }
+// Behind a trusted reverse proxy (TRUST_PROXY=1) the web tier passes the visitor address so throttling is per visitor.
+std::string clientAddress(const httplib::Request& req) {
+    if (cw::setting("TRUST_PROXY")=="1") {
+        auto forwarded=req.get_header_value("X-CredWise-Client-IP");
+        if (!forwarded.empty() && forwarded.size()<=64) return forwarded;
+    }
+    return req.remote_addr;
+}
 std::string sessionToken(const std::string& cookies) {
     for (auto cookie : parts(cookies,';')) {
         auto first=cookie.find_first_not_of(' ');
@@ -26,9 +34,17 @@ std::string sessionToken(const std::string& cookies) {
 int main(int argc,char** argv) {
     using namespace cw;
     try {
-        if (setting("DATABASE_URL").empty()) throw std::runtime_error("Set DATABASE_URL before starting CredWise.");
+        (void)databaseConnectionString();  // Validates DATABASE_URL and the SSL settings before any connection.
         auto databaseRoot=std::filesystem::path(setting("CREDWISE_DB_DIR","database"));
-        { Database db; migrate(db,databaseRoot); if (setting("DEMO_MODE")=="1") seedIdentity(db); }
+        // A serverless database such as Neon can take several seconds to wake, so startup retries before giving up.
+        for (int attempt=1;;++attempt) {
+            try { Database db; migrate(db,databaseRoot); if (setting("DEMO_MODE")=="1") seedIdentity(db); break; }
+            catch (const Error& e) {
+                if (e.code!="database_unavailable" || attempt>=10) throw;
+                std::cerr << "Waiting for the database (attempt " << attempt << " of 10)..." << std::endl;
+                std::this_thread::sleep_for(std::chrono::seconds(3));
+            }
+        }
         if (argc>1 && std::string(argv[1])=="--migrate") return 0;
         httplib::Server server;
         server.new_task_queue=[] {return new httplib::ThreadPool(8);};
@@ -49,7 +65,7 @@ int main(int argc,char** argv) {
                 }
                 Json body = req.body.empty() ? Json::object() : Json::parse(req.body);
                 require(body.is_object(),"Send a JSON object.");
-                Request request{req.method,parts(req.path.substr(5),'/'),body,{},sessionToken(req.get_header_value("Cookie")),req.remote_addr,req.get_header_value("Idempotency-Key")};
+                Request request{req.method,parts(req.path.substr(5),'/'),body,{},sessionToken(req.get_header_value("Cookie")),clientAddress(req),req.get_header_value("Idempotency-Key")};
                 for (auto& [key,value] : req.params) request.query.emplace(key,value);
                 Database db;
                 auto result=dispatch(db,request);

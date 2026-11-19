@@ -1,0 +1,25 @@
+# Render Blueprint. Create it with: New > Blueprint > select this repository.
+# The database is external (Neon), so its connection string is entered in the dashboard and never committed.
+services:
+  - type: web
+    name: credwise-360
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # Neon connection string, for example postgresql://USER:PASSWORD@HOST/DB?sslmode=require
+      - key: DATABASE_SSLMODE
+        value: require
+      - key: DEMO_MODE
+        value: "1"           # creates the demo accounts; set to "0" for a real deployment
+      - key: SEED_DEMO
+        value: "1"           # loads the demo portfolio after startup (safe to repeat)
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: TRUST_PROXY
+        value: "1"           # per-visitor login throttling behind Render's proxy
+      # WEB_ORIGINS is derived from Render's RENDER_EXTERNAL_URL. Set it only for a custom domain.

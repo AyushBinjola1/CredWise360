@@ -100,6 +100,10 @@ npm.cmd start                          # in a second terminal, web on 127.0.0.1:
 
 Copy `.env.example` to `.env`, set a local PostgreSQL password, then run `docker compose up --build` and open http://localhost:3000. Seed the demo accounts once the stack is healthy with `WEB_URL=http://localhost:3000 npm run seed:demo`. The Compose and Dockerfile configuration was written alongside the Windows setup but has not been executed in the author's environment.
 
+### Hosted deployment (Render and Neon)
+
+The repository includes a [Render blueprint](render.yaml) and a single-container image ([deploy/render/Dockerfile](deploy/render/Dockerfile)) that serves the web app on Render's `PORT` and connects to an external Neon PostgreSQL database over SSL. Migrations and demo initialization run automatically at startup. See [docs/deployment.md](docs/deployment.md) for the exact settings and environment variables.
+
 ## Demo accounts
 
 All accounts use the password `CredWiseDemo!360`. They exist only in demo mode (`DEMO_MODE=1`) and hold synthetic data.

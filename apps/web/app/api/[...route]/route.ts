@@ -6,6 +6,8 @@ async function forward(req: NextRequest,{params}:{params:Promise<{route:string[]
  const base=process.env.CORE_URL||'http://127.0.0.1:8787';
  const headers=new Headers();
  for(const key of ['content-type','cookie','origin','x-credwise-action','idempotency-key']){const v=req.headers.get(key);if(v)headers.set(key,v);}
+ const visitor=(req.headers.get('x-forwarded-for')||'').split(',')[0].trim();
+ if(visitor)headers.set('x-credwise-client-ip',visitor);
  try{
    const payload=req.method==='GET'?undefined:await req.text();
    if(payload&&Buffer.byteLength(payload)>600*1024)return Response.json({error:{code:'size',message:'File or form is too large.'}},{status:413});

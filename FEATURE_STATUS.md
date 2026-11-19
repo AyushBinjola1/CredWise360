@@ -77,3 +77,7 @@ Verified on 19 November 2026 from a clean verification schema with `node scripts
 - Fairness testing uses synthetic personas. It shows the policy ignores the listed attributes, not that real-world outcomes are free of proxy effects.
 - Distress levels are recomputed when a customer or administrator opens the view (administrator view at most once a minute per customer), not by a background worker.
 - Notification preferences, email or SMS delivery and background reminder jobs are not implemented. Reminders are generated when the notification list is read.
+
+### Deployment preparation
+
+`DATABASE_URL` accepts URI or keyword form with optional `DATABASE_SSLMODE` and `DATABASE_CONNECT_TIMEOUT`, startup retries a sleeping database, and `TRUST_PROXY` enables per-visitor throttling behind a proxy. Unit tests in `core_units` cover the connection-string rules. The container entrypoint was run locally against an SSL-only PostgreSQL: migrations, demo seeding, TLS 1.3 connections (from the server log), refusal of plaintext, origin checks and error exits were observed. The Render image build, Render itself and Neon were not run in this environment. Details: `docs/deployment.md`.
