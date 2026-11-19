@@ -211,6 +211,7 @@ test('PDF exports are valid, current and authorized',async()=>{
     assert.equal(offsets.length,count-1);
     offsets.forEach((o,i)=>assert.ok(body.slice(o).startsWith(`${i+1} 0 obj`),'xref offset '+(i+1)));
     assert.ok(body.includes(needle),'missing '+needle);
+    assert.ok(body.includes('0.0667 0.0941 0.1529 rg')&&body.includes('0 0.8392 0.3098 rg'),'brand header and logo colours');
   };
   check(decode((await session.get('reports/pdf/health')).data),'Financial health report');
   check(decode((await session.get('reports/pdf/credit')).data),'Simulated credit assessment');

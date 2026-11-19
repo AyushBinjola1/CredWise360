@@ -1,0 +1,23 @@
+.logo{display:inline-flex;align-items:center;line-height:0;flex:none;max-width:100%}
+.logo-img{display:block;flex:none;max-width:none}
+.logo-dark{display:none}
+:root[data-theme=dark] .logo-light{display:none}
+:root[data-theme=dark] .logo-dark{display:block}
+@media print{.logo-light{display:block!important}.logo-dark{display:none!important}}
+
+/* Compact layouts show the icon alone. */
+.brand-compact{display:none}
+@media(max-width:430px){.bar .brand-full{display:none}.bar .brand-compact{display:inline-flex}}
+
+/* Loading indicator: the icon breathes gently. */
+.logo-pulse .logo-img{animation:logo-pulse 1.6s ease-in-out infinite}
+@keyframes logo-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.94)}}
+@media(prefers-reduced-motion:reduce){.logo-pulse .logo-img{animation:none}}
+
+/* Workspace top bar: the icon marks the page on narrow screens where the sidebar is hidden. */
+.topbar-brand{display:none;align-items:center;margin-right:auto}
+@media(max-width:760px){.topbar-brand{display:inline-flex}}
+
+
+/* Standalone pages (404, errors): breathing room between the logo and the heading. */
+.reading>.brand{margin-bottom:26px}

@@ -1,10 +1,15 @@
 #include "engines/pdf.hpp"
+#include "engines/pdf_brand.hpp"
 #include <iomanip>
 #include <sstream>
 
 namespace cw {
 namespace {
-constexpr double pageWidth = 595, pageHeight = 842, margin = 48, headerHeight = 62, footerHeight = 40;
+constexpr double pageWidth = 595, pageHeight = 842, margin = 48, headerHeight = 70, footerHeight = 40;
+// Brand palette as PDF colour operands.
+constexpr const char* charcoal = "0.0667 0.0941 0.1529";
+constexpr const char* emerald = "0 0.5255 0.2196";
+constexpr const char* nightGreen = "0 0.8392 0.3098";
 
 // Replace characters outside the base-14 font set so every byte in the file is plain ASCII.
 std::string ascii(const std::string& in) {
@@ -67,13 +72,13 @@ std::string PdfDocument::inr(Money paise) {
 }
 void PdfDocument::newPage() {
     pages_.push_back({});
-    rect(0, pageHeight - headerHeight, pageWidth, headerHeight, "0.098 0.243 0.18");
-    text(margin, pageHeight - 30, "CredWise 360", 15, true, "1 1 1");
-    text(margin, pageHeight - 48, "Educational lending simulation - synthetic data", 8.5, false, "0.85 0.92 0.87");
-    text(pageWidth - margin - width(title_, 11, true), pageHeight - 30, title_, 11, true, "1 1 1");
+    rect(0, pageHeight - headerHeight, pageWidth, headerHeight, charcoal);
+    logo(margin, pageHeight - 46, 30);
+    text(margin, pageHeight - 61, "Educational lending simulation - synthetic data", 8, false, "0.72 0.76 0.8");
+    text(pageWidth - margin - width(title_, 11, true), pageHeight - 33, title_, 11, true, "1 1 1");
     y_ = pageHeight - headerHeight - 30;
     if (pages_.size() == 1) {
-        text(margin, y_, title_, 20, true, "0.098 0.243 0.18");
+        text(margin, y_, title_, 20, true, charcoal);
         y_ -= 18;
         if (!subtitle_.empty()) { text(margin, y_, subtitle_, 10, false, "0.35 0.42 0.38"); y_ -= 14; }
         y_ -= 10;
@@ -83,6 +88,18 @@ void PdfDocument::ensure(double height) { if (y_ - height < footerHeight + 12) n
 void PdfDocument::text(double x, double y, const std::string& value, double size, bool bold, const char* colour) {
     pages_.back().content += "BT /" + std::string(bold ? "F2" : "F1") + " " + number(size) + " Tf " + colour + " rg " +
                              number(x) + " " + number(y) + " Td (" + escape(value) + ") Tj ET\n";
+}
+void PdfDocument::logo(double x, double y, double height) {
+    namespace b = cw::brand;
+    const double k = height / b::logoHeight, top = y + height;
+    auto place = [&](const char* path, double ox, double oy, double scale, const char* colour) {
+        std::ostringstream matrix;
+        matrix << std::fixed << std::setprecision(5) << k * scale << " 0 0 " << -k * scale << " " << x + k * ox << " " << top - k * oy;
+        pages_.back().content += "q " + matrix.str() + " cm " + colour + " rg " + path + " f* Q\n";
+    };
+    place(b::iconPath(), 0, b::iconY, b::iconScale, nightGreen);
+    place(b::letterPath(), b::textX, b::textY, b::textScale, "1 1 1");
+    place(b::numberPath(), b::textX, b::textY, b::textScale, nightGreen);
 }
 void PdfDocument::rect(double x, double y, double w, double h, const char* colour) {
     pages_.back().content += std::string(colour) + " rg " + number(x) + " " + number(y) + " " + number(w) + " " + number(h) + " re f\n";
@@ -103,7 +120,7 @@ std::vector<std::string> PdfDocument::wrap(const std::string& value, double maxW
 void PdfDocument::heading(const std::string& value) {
     ensure(44);
     y_ -= 12;
-    text(margin, y_, value, 13, true, "0.098 0.243 0.18");
+    text(margin, y_, value, 13, true, emerald);
     rect(margin, y_ - 5, pageWidth - 2 * margin, 0.8, "0.7 0.8 0.74");
     y_ -= 20;
 }
@@ -140,7 +157,7 @@ void PdfDocument::table(const std::vector<std::string>& columns, const std::vect
     for (double& v : w) v = total * v / sum;
     auto header = [&] {
         ensure(26);
-        rect(margin, y_ - 6, total, 19, "0.098 0.243 0.18");
+        rect(margin, y_ - 6, total, 19, charcoal);
         double x = margin;
         for (size_t i = 0; i < columns.size(); ++i) {
             const bool right = i > 0 && rows.size() && numeric(rows.front()[i]);

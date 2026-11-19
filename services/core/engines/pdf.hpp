@@ -24,6 +24,8 @@ private:
     void ensure(double height);
     void text(double x, double y, const std::string& value, double size, bool bold, const char* colour = "0.1 0.15 0.12");
     void rect(double x, double y, double w, double h, const char* colour);
+    // Draws the CredWise 360 logo (dark-theme colours, for the charcoal header) with its lower-left corner at (x, y).
+    void logo(double x, double y, double height);
     std::vector<std::string> wrap(const std::string& value, double width, double size, bool bold) const;
 };
 }

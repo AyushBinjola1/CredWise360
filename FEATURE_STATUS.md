@@ -18,7 +18,7 @@ A checked row requires an executed functional check. Partial coverage is recorde
 | 33–34 | Reports, exports and normalized persistent records | Verified for the listed reports | CSV export on tabular reports. PDFs rendered by the C++ service for financial health, credit assessment, loan statement, closure certificate, saved planning scenarios and the portfolio. Cross-reference offsets are re-read in native and API tests and two PDFs were inspected visually. Audit and application-summary reports are not implemented. |
 | 35–39 | C++ OOP, DSA, OS concepts, patterns and REST contract | Partially documented | `docs/academic-guide.md` concept map covers state machines, strategy rules, root finding, simulation, counterfactual testing and PDF serialization. `docs/openapi.json` documents 75 paths. No dedicated data-structure benchmark or OS-concept demonstration. |
 | 40–43 | Security, responsive design, performance and interaction quality | Partially verified | `tests/browser/inventory.spec.ts` visits every customer and administrator route at 360, 768 and 1440 px: no page or console errors, one h1 and a main landmark, no horizontal overflow, labelled controls, named buttons and links, and visible keyboard focus on key pages. No performance measurements and no screen-reader testing. |
-| 44–46 | Synthetic cohorts, automated checks and eight end-to-end scenarios | Partially verified | Four seeded demo accounts built through the real workflows (`scripts/seed-demo.mjs`). 27 API and 15 browser tests. The eight brief scenarios are not mapped one-to-one. |
+| 44–46 | Synthetic cohorts, automated checks and eight end-to-end scenarios | Partially verified | Four seeded demo accounts built through the real workflows (`scripts/seed-demo.mjs`). 27 API and 20 browser tests. The eight brief scenarios are not mapped one-to-one. |
 | 47–50 | Academic guides, team map, checkpoints and final acceptance | Partially complete | Academic guide, data model, README and this ledger updated. No team map. |
 
 ## Phase verification log
@@ -59,7 +59,7 @@ Verified on 19 November 2026 from a clean verification schema with `node scripts
 
 ### Phase 8 (remaining scope)
 
-Verified on 19 November 2026 from a clean verification schema with `node scripts/check-phase.mjs`: 6 of 6 native CTest suites (`core_units`, `financial_invariants`, `credit_policy_boundaries`, `lifecycle_and_servicing`, `planning_engines`, `oversight_engines`), 27 of 27 PostgreSQL-backed API tests and 15 of 15 Chromium tests.
+Verified on 19 November 2026 from a clean verification schema with `node scripts/check-phase.mjs`: 6 of 6 native CTest suites (`core_units`, `financial_invariants`, `credit_policy_boundaries`, `lifecycle_and_servicing`, `planning_engines`, `oversight_engines`), 27 of 27 PostgreSQL-backed API tests and 15 of 15 Chromium tests (20 of 20 after the brand identity work).
 
 - Predatory Loan Protector (`engines/safety.cpp`): effective annual cost by bisection over the repayment stream; flags for rate gap, flat interest, upfront deductions, bundled charges, payment mismatch, frequency, late fee, prepayment, lock-in, undisclosed terms and income burden; checklist and disclaimer. A 12% reducing monthly loan reproduces 12.68%.
 - Distress early warning (`engines/distress.cpp`): nine indicators, explainable levels, recommendations, supportive administrator outreach. It never feeds scoring and the score was asserted unchanged.
@@ -81,3 +81,8 @@ Verified on 19 November 2026 from a clean verification schema with `node scripts
 ### Deployment preparation
 
 `DATABASE_URL` accepts URI or keyword form with optional `DATABASE_SSLMODE` and `DATABASE_CONNECT_TIMEOUT`, startup retries a sleeping database, and `TRUST_PROXY` enables per-visitor throttling behind a proxy. Unit tests in `core_units` cover the connection-string rules. The container entrypoint was run locally against an SSL-only PostgreSQL: migrations, demo seeding, TLS 1.3 connections (from the server log), refusal of plaintext, origin checks and error exits were observed. The Render image build, Render itself and Neon were not run in this environment. Details: `docs/deployment.md`.
+
+### Brand identity
+
+The approved logo artwork was traced to six transparent SVGs (`apps/web/public/brand`), exported to PNG, and applied through a reusable `Logo` component with automatic light and dark selection. It appears in the public header and footer, sign-in and registration, both workspaces (sidebar, mobile top bar and menu), the loading state, error and not-found pages, and the PDF report header. Favicons (SVG and ICO), Apple touch and 192/512 application icons, a web manifest and Open Graph and Twitter metadata were added. `tests/browser/brand.spec.ts` checks the assets, theme switching without box movement or layout-shift sources on the logo, icon-only compact layouts, placement across pages and the published icons and metadata. The PDF test checks the header colours. The HTML closure certificate download still uses a text header, and there is no collapsed-sidebar mode in the app, so the icon-only logo is used in the mobile top bar and compact public header instead. The logo is a trace of raster artwork, so very fine edge detail follows the source rather than a hand-drawn original.
+

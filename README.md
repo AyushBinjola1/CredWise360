@@ -1,3 +1,11 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/brand/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="apps/web/public/brand/logo-light.svg">
+    <img alt="CredWise 360" src="apps/web/public/brand/logo-light.svg" height="72">
+  </picture>
+</p>
+
 # CredWise 360
 
 **A responsible-lending studio built on a native C++20 API and PostgreSQL.**
@@ -121,7 +129,7 @@ All accounts use the password `CredWiseDemo!360`. They exist only in demo mode (
 
 ## Testing
 
-`node scripts/check-phase.mjs` (after loading `scripts/env.ps1`) is the full regression gate. It builds the C++ and web applications, runs the native suites, applies migrations twice, starts both services on dedicated ports against a separate PostgreSQL schema, then runs the API and browser tests. The latest run passed 6 native suites, 27 API tests and 15 browser tests.
+`node scripts/check-phase.mjs` (after loading `scripts/env.ps1`) is the full regression gate. It builds the C++ and web applications, runs the native suites, applies migrations twice, starts both services on dedicated ports against a separate PostgreSQL schema, then runs the API and browser tests. The latest run passed 6 native suites, 27 API tests and 20 browser tests.
 
 With both services running you can also use `npm run test:api` and `npm run test:browser` (install the browser once with `npx playwright install chromium`). Coverage includes loan arithmetic reconciled to the paisa, state machines, late penalties, default documentation, concurrent and idempotent payments, authorization between roles, fairness invariants, PDF structure, and a route-by-route accessibility and overflow inventory at three widths.
 
@@ -138,7 +146,7 @@ With both services running you can also use `npm run test:api` and `npm run test
 
 ## Documentation
 
-[Academic guide and viva notes](docs/academic-guide.md) · [Acceptance matrix](docs/acceptance-matrix.md) · [Feature ledger](FEATURE_STATUS.md) · [Implementation roadmap](IMPLEMENTATION_PLAN.md) · [Development brief](docs/DEVELOPMENT_BRIEF.md) · [Visual asset notes](docs/visual-assets.md)
+[Academic guide and viva notes](docs/academic-guide.md) · [Acceptance matrix](docs/acceptance-matrix.md) · [Feature ledger](FEATURE_STATUS.md) · [Implementation roadmap](IMPLEMENTATION_PLAN.md) · [Development brief](docs/DEVELOPMENT_BRIEF.md) · [Visual asset notes](docs/visual-assets.md) · [Brand guide](docs/brand.md)
 
 ## Limitations
 
