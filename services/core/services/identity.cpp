@@ -151,10 +151,10 @@ void seedIdentity(Database& db) {
     db.exec("SELECT pg_advisory_xact_lock(36804361)");
     auto admin = db.rows("SELECT id FROM users WHERE email='admin@credwise.test'");
     std::string adminId = admin.empty()
-        ? idOf(createAccount(db,"admin@credwise.test","Meera Rao","CredWiseDemo!360","admin",security::token(16)))
+        ? idOf(createAccount(db,"admin@credwise.test","Ayush Binjola","CredWiseDemo!360","admin",security::token(16)))
         : idOf(admin.front());
     if (db.rows("SELECT id FROM users WHERE email='borrower@credwise.test'").empty()) {
-        auto borrower = createAccount(db,"borrower@credwise.test","Aarav Mehta","CredWiseDemo!360","customer",security::token(16));
+        auto borrower = createAccount(db,"borrower@credwise.test","Ayush","CredWiseDemo!360","customer",security::token(16));
         const auto id = idOf(borrower);
         saveProfile(db,id,{
             {"salary",7800000},{"business_income",0},{"other_income",450000},{"essential",2560000},
@@ -164,7 +164,7 @@ void seedIdentity(Database& db) {
             {"income_regularity",96},{"rent",100},{"utilities",97},{"consent",true},{"goal","Build six months of reserves"},
             {"goal_amount",19440000}
         });
-        submitKyc(db,id,{{"legal_name","Aarav Mehta"},{"address","Demo House 12, Example Lane, Pune"},
+        submitKyc(db,id,{{"legal_name","Ayush"},{"address","Demo House 12, Example Lane, Pune"},
                         {"employment","Salaried professional"},{"pan","DEMOX4321A"},
                         {"document",{{"name","synthetic-proof.txt"},{"mime","text/plain"},{"content_base64","Q1JFRFdJU0UtU1lOVEhFVElD"}}}});
         reviewKyc(db,adminId,id,{{"status","verified"},{"reason","Reviewed the supplied synthetic demonstration document."}});

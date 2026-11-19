@@ -4,6 +4,8 @@
 
 CredWise 360 simulates the full borrowing journey: understanding credit, choosing a loan, applying, being underwritten, repaying, and recovering if things go wrong. Every calculation, state transition and rule runs in an object-oriented C++ service. The Next.js web app presents the results. All identities, documents and money are synthetic, and the project is an educational simulation, not a financial product.
 
+**Live demo: [credwise360.onrender.com](https://credwise360.onrender.com/)**. Sign in with the [demo accounts](#demo-accounts) below. The free hosting plan sleeps when idle, so the first load can take a minute.
+
 ![Borrower dashboard](docs/screenshots/02-borrower-dashboard.png)
 
 ## Screenshots
@@ -110,8 +112,8 @@ All accounts use the password `CredWiseDemo!360`. They exist only in demo mode (
 
 | Role | Email | What it shows |
 | --- | --- | --- |
-| Borrower | `borrower@credwise.test` | Aarav Mehta: verified KYC, a funded ₹1,00,000 personal loan with two EMIs repaid, an education loan application under review, and completed academy lessons |
-| Administrator | `admin@credwise.test` | Meera Rao: underwriting queue, loan portfolio, fraud review, support tickets, fairness monitor, reports, scoring policy and product configuration |
+| Borrower | `borrower@credwise.test` | Ayush: verified KYC, a funded ₹1,00,000 personal loan with two EMIs repaid, an education loan application under review, and completed academy lessons |
+| Administrator | `admin@credwise.test` | Ayush Binjola: underwriting queue, loan portfolio, fraud review, support tickets, fairness monitor, reports, scoring policy and product configuration |
 | Borrower | `diya.nair@credwise.test` | A rejected application with a recovery roadmap and a reconsideration ticket awaiting her reply |
 | Borrower | `rohan.iyer@credwise.test` | A thin credit file assessed from consented alternative evidence, with a microfinance application pending |
 

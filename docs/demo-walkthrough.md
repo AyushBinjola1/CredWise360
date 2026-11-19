@@ -1,6 +1,6 @@
 # Demonstration walkthrough
 
-Use the two buttons on the sign-in screen to fill the demo credentials. **Borrower** opens Aarav Mehta’s synthetic financial profile and **Administrator** opens Meera Rao’s operations workspace. Use separate browser profiles to keep both sessions open. The customer and administrator share a local PostgreSQL database.
+Use the two buttons on the sign-in screen to fill the demo credentials. **Borrower** opens Ayush’s synthetic financial profile and **Administrator** opens Ayush Binjola’s operations workspace. Use separate browser profiles to keep both sessions open. The customer and administrator share a local PostgreSQL database.
 
 ## Identity and profile
 

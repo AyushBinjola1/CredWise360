@@ -31,7 +31,7 @@ const admin = client();
 await admin.post('auth/login', {email: 'admin@credwise.test', password: PASSWORD});
 const pay = (session, loan, key, body) => session.request('POST', `loans/${loan}/payments`, {body, status: 201, headers: {'Idempotency-Key': key}});
 
-// Aarav already exists in demo mode. Give the account a funded, partly repaid loan and an application in underwriting.
+// The demo borrower already exists in demo mode. Give the account a funded, partly repaid loan and an application in underwriting.
 const aarav = client();
 await aarav.post('auth/login', {email: 'borrower@credwise.test', password: PASSWORD});
 const existing = (await aarav.get('applications')).data;

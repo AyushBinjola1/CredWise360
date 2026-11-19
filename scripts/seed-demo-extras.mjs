@@ -11,16 +11,16 @@ async function login(email) {
 const admin = await login('admin@credwise.test');
 let changed = 0;
 
-// Aarav completes the first three lessons.
-const aarav = await login('borrower@credwise.test');
-const lessons = (await aarav.get('academy?lang=en')).data.items;
+// The demo borrower completes the first three lessons.
+const borrower = await login('borrower@credwise.test');
+const lessons = (await borrower.get('academy?lang=en')).data.items;
 for (const lesson of lessons.slice(0, 3).filter(l => !l.completed)) {
   for (let choice = 0; choice < 4; choice++) {
-    const answer = (await aarav.post(`academy/${lesson.slug}/answer`, {choice, lang: 'en'})).data;
+    const answer = (await borrower.post(`academy/${lesson.slug}/answer`, {choice, lang: 'en'})).data;
     if (answer.correct) { changed++; break; }
   }
 }
-await aarav.get('rewards');
+await borrower.get('rewards');
 
 // Diya asks for her rejected application to be reconsidered and the administrator requests more evidence.
 const diya = await login('diya.nair@credwise.test');
