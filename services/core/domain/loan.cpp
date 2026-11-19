@@ -79,7 +79,7 @@ Json Loan::evaluate(Money principal,int months,const std::string& purpose,const 
             decision.compatibility += 35;
             decision.reasons.push_back("The stated purpose matches this product.");
         } else decision.decline("The stated purpose falls outside this product’s intended uses.");
-        const auto& values = profile->at("profile");
+        const auto& values = profile->contains("effective_profile") ? profile->at("effective_profile") : profile->at("profile");
         const auto& metrics = profile->at("metrics");
         const Money income = metrics.at("income");
         const Money emi = proposal.at("emi");

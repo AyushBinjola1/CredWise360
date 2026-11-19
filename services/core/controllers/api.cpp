@@ -2,6 +2,10 @@
 #include "services/identity.hpp"
 #include "services/assessment.hpp"
 #include "services/market.hpp"
+#include "services/origination.hpp"
+#include "services/servicing.hpp"
+#include "services/planning.hpp"
+#include "services/engagement.hpp"
 namespace cw {
 Response dispatch(Database& db, const Request& request) {
     if (request.path == std::vector<std::string>{"health"} && request.method == "GET") {
@@ -13,6 +17,10 @@ Response dispatch(Database& db, const Request& request) {
     if (auto response=identityRoutes(db,request)) return *response;
     if (auto response=assessmentRoutes(db,request)) return *response;
     if (auto response=marketRoutes(db,request)) return *response;
+    if (auto response=originationRoutes(db,request)) return *response;
+    if (auto response=servicingRoutes(db,request)) return *response;
+    if (auto response=planningRoutes(db,request)) return *response;
+    if (auto response=engagementRoutes(db,request)) return *response;
     throw Error(404,"not_found","No matching API route.");
 }
 }

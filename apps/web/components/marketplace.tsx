@@ -119,7 +119,7 @@ function ProductDetail({ slug, signedIn }: { slug: string; signedIn: boolean }) 
   const kind = productKind(product.slug);
   return <div className="market-page"><Link className="market-back" href={back}><ArrowLeft size={15}/>All products</Link>
     <div className="market-detail-hero"><div><span className="eyebrow"><i/> Loan product</span><h1>{product.name}</h1><p>{product.description}</p>
-      <div className="market-links"><Button asChild><Link href={'/calculator?product=' + encodeURIComponent(product.slug)}>Estimate a repayment<ArrowRight size={16}/></Link></Button>
+      <div className="market-links">{signedIn&&<Button asChild><Link href={'/app/applications/new?product='+encodeURIComponent(product.slug)}>Start application<ArrowRight size={16}/></Link></Button>}<Button asChild variant={signedIn?'outline':'default'}><Link href={'/calculator?product=' + encodeURIComponent(product.slug)}>Estimate a repayment<ArrowRight size={16}/></Link></Button>
       <Button asChild variant="outline"><Link href={'/compare?product=' + encodeURIComponent(product.slug)}><GitCompareArrows size={16}/>Compare options</Link></Button></div>
     </div>{kind === 'education' ? <img src="/images/campus-planning.webp" alt="A student reads a workbook on a shaded campus bench." width={1536} height={1024}/> :
       <div className="market-detail-symbol" aria-hidden="true"><Icon size={68} strokeWidth={1.25}/></div>}</div>

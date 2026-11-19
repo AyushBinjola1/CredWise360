@@ -1,12 +1,22 @@
 'use client';
 import type {User} from '@/lib/model';
+import {ApplicationsPage,UnderwritingPage,RecoveryPage} from './origination';
+import {LoansPage} from './servicing';
+import {TwinPage,DebtPage,StressPage,EducationPage} from './planning';
+import {NotificationsPage,ReportsPage,AdminReportsPage,FraudPage} from './operations';
 import {CreditPage,PolicyPage} from './credit';
 import {ProductAdmin} from './product-admin';
 import {MarketplacePage,ComparePage,CalculatorPage} from './marketplace';
 import {Overview,AdminOverview} from './overview';
 import {ProfilePage,KycPage,SettingsPage,AdminIdentityPage} from './identity-forms';
 export function WorkspaceContent({user,slug,parts}:{user:User;slug:string;parts:string[]}){
+ if(slug==='applications')return user.role==='admin'?<UnderwritingPage parts={parts}/>:<ApplicationsPage parts={parts}/>;
+ if(slug==='loans'||slug==='repayments')return <LoansPage parts={parts} admin={user.role==='admin'} repayments={slug==='repayments'}/>;
+ if(slug==='recovery')return <RecoveryPage/>;
  if(slug==='settings')return <SettingsPage/>;
+ if(slug==='reports')return user.role==='admin'?<AdminReportsPage/>:<ReportsPage/>;
+ if(slug==='fraud'&&user.role==='admin')return <FraudPage/>;
+ if(user.role==='customer'){if(slug==='notifications')return <NotificationsPage/>;if(slug==='twin')return <TwinPage/>;if(slug==='debt')return <DebtPage/>;if(slug==='stress')return <StressPage/>;if(slug==='education')return <EducationPage/>;}
  if(user.role==='admin'){if(slug==='policy')return <PolicyPage/>;if(slug==='products')return <ProductAdmin/>;if(slug==='kyc'||slug==='users')return <AdminIdentityPage kind={slug}/>;return <AdminOverview/>;}
  if(slug==='credit')return <CreditPage/>;
  if(slug==='market')return <MarketplacePage signedIn slug={parts[0]}/>;

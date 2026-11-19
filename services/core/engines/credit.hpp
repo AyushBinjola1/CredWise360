@@ -20,6 +20,7 @@ class CreditScoreEngine {
 public:
     explicit CreditScoreEngine(Json policy) : policy_(std::move(policy)) {}
     Json evaluate(const Json& fullProfile, int recent = 0) const;
+    Json evaluate(const FinancialProfile& financial, int recent) const;
 };
 void validateCreditPolicy(const Json&);
 }

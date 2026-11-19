@@ -14,5 +14,11 @@ export async function GuardedPage({role,parts}:{role:Role;parts:string[]}){
  if(user.role!==role)redirect(baseFor(user.role));
  const slug=parts[0]||'';
  if(!destinations(role).some(x=>x.slug===slug))notFound();
+ if(parts.length>1){
+  const [,id,document]=parts;
+  const numeric=/^[1-9][0-9]{0,17}$/.test(id);
+  const valid=(slug==='market'&&parts.length===2)||(slug==='applications'&&parts.length===2&&(numeric||(role==='customer'&&id==='new')))||(slug==='loans'&&numeric&&(parts.length===2||(parts.length===3&&document==='certificate')));
+  if(!valid)notFound();
+ }
  return <WorkspaceShell user={user} slug={slug}><WorkspaceContent user={user} slug={slug} parts={parts.slice(1)}/></WorkspaceShell>;
 }

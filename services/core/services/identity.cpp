@@ -1,8 +1,10 @@
 #include "services/identity.hpp"
+#include "services/servicing.hpp"
 #include "services/assessment.hpp"
 #include "domain/profile.hpp"
 #include "security/accounts.hpp"
 #include "security/credentials.hpp"
+#include "security/synthetic_document.hpp"
 #include <charconv>
 #include <regex>
 
@@ -41,12 +43,14 @@ Json saveProfile(Database& db, const std::string& id, const Json& changes) {
         INSERT INTO financial_entries(user_id,kind,amount)
         SELECT $1, key, value::bigint FROM jsonb_each_text($2::jsonb)
         ON CONFLICT(user_id,kind) DO UPDATE SET amount=excluded.amount,updated_at=now())", {id,money.dump()});
-    auto metrics = profile.metrics();
+    auto portfolio = portfolioCommitments(db,id);
+    auto combined = profile.withPortfolio(portfolio);
+    auto metrics = combined.metrics();
     db.exec("INSERT INTO financial_snapshots(user_id,profile,metrics) VALUES($1,$2::jsonb,$3::jsonb)",
             {id,values.dump(),metrics.dump()});
     recordProfileAssessment(db,id,values);
     identityAudit(db,id,id,"profile.updated");
-    return {{"profile",values},{"metrics",metrics}};
+    return {{"profile",values},{"metrics",metrics},{"effective_profile",combined.values()},{"portfolio",portfolio}};
 }
 
 Json findKyc(Database& db, const std::string& id) {
@@ -64,28 +68,11 @@ Json submitKyc(Database& db, const std::string& id, const Json& body) {
     static const std::regex syntheticPan("^DEMO[A-Z][0-9]{4}[A-Z]$");
     require(std::regex_match(pan,syntheticPan),"Enter a synthetic PAN such as DEMOX1234Q.");
     require(body.contains("document") && body.at("document").is_object(), "Attach a synthetic proof document.");
-    const auto& doc = body.at("document");
-    auto name = field(doc,"name",120), mime = field(doc,"mime",60), encoded = field(doc,"content_base64",350000);
-    require(name.find_first_of("/\\:*?\"<>|\r\n\t") == std::string::npos && name != "." && name != "..",
-            "Use a plain document filename.");
-    auto bytes = security::decodeDocument(encoded);
-    const std::string marker = "CREDWISE-SYNTHETIC";
-    if (mime == "text/plain") {
-        require(bytes.starts_with(marker) && bytes.find('\0') == std::string::npos,
-                "Use a text file beginning with CREDWISE-SYNTHETIC.");
-        try { (void)Json(bytes).dump(); }
-        catch (const Json::exception&) { throw Error(422,"validation","The text file must contain valid UTF-8."); }
-    } else if (mime == "application/pdf") {
-        require(bytes.starts_with("%PDF-") && bytes.find(marker) != std::string::npos,
-                "Use a synthetic PDF containing CREDWISE-SYNTHETIC.");
-    } else throw Error(422,"validation","Use a synthetic PDF or plain text document.");
-
     db.one("SELECT id FROM users WHERE id=$1 FOR UPDATE",{id});
     auto existing = db.rows("SELECT status FROM kyc_records WHERE user_id=$1",{id});
     if (!existing.empty() && existing.front().at("status") != "rejected")
         throw Error(409,"kyc_state","A new submission is available after a reviewer requests a correction.");
-    auto inserted = db.one("INSERT INTO synthetic_documents(user_id,name,mime,contents,sha256) VALUES($1,$2,$3,decode($4,'base64'),$5) RETURNING id",
-                           {id,name,mime,encoded,security::digest(bytes)});
+    auto inserted = storeSyntheticDocument(db,id,body.at("document"));
     auto record = db.one(R"(
         INSERT INTO kyc_records(user_id,legal_name,address,employment,pan,document_id,status)
         VALUES($1,$2,$3,$4,$5,$6,'pending')
@@ -154,7 +141,9 @@ Json currentUser(Database& db, const Request& req, bool admin) {
 }
 Json getProfile(Database& db, std::string userId) {
     auto profile = loadProfile(db,userId);
-    return {{"profile",profile.values()},{"metrics",profile.metrics()}};
+    auto portfolio = portfolioCommitments(db,userId);
+    auto combined = profile.withPortfolio(portfolio);
+    return {{"profile",profile.values()},{"metrics",combined.metrics()},{"effective_profile",combined.values()},{"portfolio",portfolio}};
 }
 void seedIdentity(Database& db) {
     if (setting("DEMO_MODE") != "1") return;

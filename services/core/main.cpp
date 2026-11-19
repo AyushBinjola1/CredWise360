@@ -49,7 +49,7 @@ int main(int argc,char** argv) {
                 }
                 Json body = req.body.empty() ? Json::object() : Json::parse(req.body);
                 require(body.is_object(),"Send a JSON object.");
-                Request request{req.method,parts(req.path.substr(5),'/'),body,{},sessionToken(req.get_header_value("Cookie")),req.remote_addr};
+                Request request{req.method,parts(req.path.substr(5),'/'),body,{},sessionToken(req.get_header_value("Cookie")),req.remote_addr,req.get_header_value("Idempotency-Key")};
                 for (auto& [key,value] : req.params) request.query.emplace(key,value);
                 Database db;
                 auto result=dispatch(db,request);

@@ -9,6 +9,7 @@ struct Request {
     std::map<std::string,std::string> query;
     std::string session;
     std::string remote;
+    std::string idempotencyKey;
 };
 struct Response {
     Json data;

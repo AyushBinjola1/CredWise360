@@ -11,6 +11,7 @@ import {
   FileText, Fingerprint, Landmark, LockKeyhole, Search, ShieldCheck, Upload, Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { readSynthetic, saveSynthetic, type SyntheticDocument } from '@/lib/synthetic-document';
 import { api, date, errText, human, money, useResource } from '@/lib/api';
 import type { FinancialProfile as Profile, ProfileResult } from '@/lib/model';
 import { Empty, Failure, Loading, Metric, PageHeading } from './states';
@@ -32,13 +33,13 @@ const sections: ProfileSection[] = [
   { id: 'budget', name: 'Monthly budget', icon: Wallet, description: 'Record recurring expenses, savings and existing monthly instalments.', fields: [
     { key: 'essential', label: 'Essential expenses', unit: 'money', hint: 'Housing, food, transport and other necessities.' },
     { key: 'discretionary', label: 'Discretionary expenses', unit: 'money', hint: 'Optional purchases, subscriptions and leisure.' },
-    { key: 'existing_emi', label: 'Existing monthly instalments', unit: 'money' },
+    { key: 'existing_emi', label: 'Existing monthly instalments', unit: 'money', hint: 'Enter commitments outside CredWise. Your simulated loans are included automatically.' },
     { key: 'savings', label: 'Monthly savings', unit: 'money' },
   ] },
   { id: 'balance', name: 'Assets & goals', icon: Landmark, description: 'Record current balances and the savings goal you want to work towards.', fields: [
     { key: 'assets', label: 'Assets', unit: 'money' },
     { key: 'liabilities', label: 'Other liabilities', unit: 'money' },
-    { key: 'debt', label: 'Outstanding debt', unit: 'money' },
+    { key: 'debt', label: 'Outstanding debt', unit: 'money', hint: 'Enter debt outside CredWise. The loan ledger supplies your platform balance.' },
     { key: 'reserves', label: 'Emergency savings', unit: 'money' },
     { key: 'goal', label: 'Financial goal', unit: 'text', hint: 'For example, setting aside three months of essential expenses.' },
     { key: 'goal_amount', label: 'Goal amount', unit: 'money' },
@@ -76,7 +77,7 @@ function Feedback({ message }: { message: string }) {
   return message ? <p className="identity-feedback" role="status"><Check size={16} aria-hidden="true"/>{message}</p> : null;
 }
 
-function CashFlow({ profile, metrics }: ProfileResult) {
+function CashFlow({ profile, metrics }: Pick<ProfileResult,'profile'|'metrics'>) {
   const allocations = [
     { label: 'Essentials', value: profile.essential, tone: 'essential' },
     { label: 'Optional spending', value: profile.discretionary, tone: 'optional' },
@@ -175,7 +176,7 @@ export function ProfilePage() {
       {sections.map(section => <div key={section.id} hidden={section.id !== active}>
         <ProfileEditor section={section} profile={profile} onSaved={saved}/>
       </div>)}
-    </div><aside className="identity-aside"><CashFlow profile={profile} metrics={metrics}/>
+    </div><aside className="identity-aside"><CashFlow profile={query.data.effective_profile} metrics={metrics}/>{query.data.portfolio.debt>0&&<section className="identity-panel"><h2>CredWise loan commitments</h2><p>Your indicators include {money(query.data.portfolio.debt)} outstanding and {money(query.data.portfolio.existing_emi)} in monthly instalments from your simulated loans.</p></section>}
       <section className="identity-panel identity-ratios"><h2>Financial indicators</h2><dl className="identity-ledger">
         <div><dt>Savings rate</dt><dd>{readableRatio(metrics.savings_rate)}</dd></div>
         <div><dt>Debt-to-income ratio</dt><dd>{readableRatio(metrics.dti)}</dd></div>
@@ -186,7 +187,6 @@ export function ProfilePage() {
   </div>;
 }
 
-type SyntheticDocument = { name: string; mime: string; content_base64: string };
 type DocumentMeta = { id: number; name: string; mime: string; size: number; sha256: string };
 type KycRecord = {
   id: number; user_id: number; legal_name: string; address: string; employment: string;
@@ -217,22 +217,6 @@ function makeFixture() {
   return { values, document };
 }
 
-async function readSynthetic(file: File): Promise<SyntheticDocument> {
-  if (file.size === 0 || file.size > 256 * 1024) throw Error('Choose a nonempty file up to 256 KB.');
-  const extension = file.name.split('.').pop()?.toLowerCase();
-  if (extension !== 'txt' && extension !== 'pdf') throw Error('Choose a .txt or .pdf synthetic document.');
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  let binary = '';
-  for (let start = 0; start < bytes.length; start += 8192) binary += String.fromCharCode(...bytes.subarray(start, start + 8192));
-  if (!binary.includes('CREDWISE-SYNTHETIC')) throw Error('The document must include the CREDWISE-SYNTHETIC marker.');
-  if (extension === 'pdf' && !binary.startsWith('%PDF-')) throw Error('This file does not have a PDF header.');
-  if (extension === 'txt') {
-    if (!binary.startsWith('CREDWISE-SYNTHETIC')) throw Error('Start the text file with CREDWISE-SYNTHETIC.');
-    try { new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch { throw Error('Save your text file as UTF-8.'); }
-  }
-  return { name: file.name, mime: extension === 'pdf' ? 'application/pdf' : 'text/plain', content_base64: btoa(binary) };
-}
-
 function ReviewStatus({ value }: { value: string }) {
   const labels: Record<string, string> = { pending: 'Awaiting review', rejected: 'Changes needed', verified: 'Verified', active: 'Active', inactive: 'Inactive' };
   return <span className={'identity-status status-' + value}><i aria-hidden="true"/>{labels[value] ?? human(value || 'not started')}</span>;
@@ -242,11 +226,7 @@ function DocumentDownload({ path, filename }: { path: string; filename: string }
   const download = useMutation({
     mutationFn: () => api<SyntheticDocument>(path),
     onSuccess(file) {
-      const bytes = Uint8Array.from(atob(file.content_base64), char => char.charCodeAt(0));
-      const href = URL.createObjectURL(new Blob([bytes], { type: file.mime }));
-      const link = document.createElement('a');
-      link.href = href; link.download = file.name; document.body.appendChild(link); link.click(); link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(href), 1000);
+      saveSynthetic(file);
     },
   });
   return <div><Button type="button" variant="outline" size="small" onClick={() => download.mutate()} disabled={download.isPending}>

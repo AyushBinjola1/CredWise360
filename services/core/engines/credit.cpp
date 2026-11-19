@@ -80,7 +80,10 @@ Json CreditScoreEngine::evaluate(const Json& fullProfile, int recent) const {
     // Identity and demographic fields never enter a scoring strategy.
     for (const auto& [name,value] : defaults.values().items())
         if (fullProfile.contains(name)) financialFields[name] = fullProfile.at(name);
-    auto financial = defaults.adjusted(financialFields);
+    return evaluate(defaults.adjusted(financialFields),recent);
+}
+
+Json CreditScoreEngine::evaluate(const FinancialProfile& financial, int recent) const {
     const auto& p = financial.values();
     auto metrics = financial.metrics();
     const auto& t = policy_.at("thresholds");
@@ -90,7 +93,7 @@ Json CreditScoreEngine::evaluate(const Json& fullProfile, int recent) const {
     const auto disposable = metrics.at("disposable").get<Money>();
     const Money emiLimit = income * T("emi_cap_pct") / 100;
     const Money capacity = std::max<Money>(0,std::min(emiLimit - emi,disposable * T("cashflow_share_pct") / 100));
-    const int payments = p.at("on_time").get<int>() + p.at("missed").get<int>();
+    const Money payments = p.at("on_time").get<Money>() + p.at("missed").get<Money>();
     bool conventional = payments >= T("min_conventional_payments") && p.at("credit_months").get<int>() >= T("min_history_months");
     bool consent = p.at("consent").get<bool>();
     std::unique_ptr<ScoringStrategy> strategy;

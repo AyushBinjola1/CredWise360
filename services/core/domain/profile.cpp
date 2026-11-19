@@ -45,6 +45,19 @@ FinancialProfile FinancialProfile::adjusted(const Json& changes) const {
     return result;
 }
 
+FinancialProfile FinancialProfile::withPortfolio(const Json& commitments) const {
+    FinancialProfile combined(*this);
+    for (const auto* key : {"debt","existing_emi","on_time","missed"}) {
+        Money declared = values_.at(key);
+        Money posted = integer(commitments,key,0,9'007'199'254'740'991LL-declared);
+        combined.values_[key] = declared + posted;
+    }
+    combined.values_["credit_months"] = std::max(values_.at("credit_months").get<int>(),
+                                                  commitments.value("credit_months",0));
+    if (commitments.at("existing_emi") > 0) combined.values_["emi_reported"] = true;
+    return combined;
+}
+
 Json FinancialProfile::metrics() const {
     auto money = [&](const char* key) { return values_.at(key).get<Money>(); };
     const Money income = money("salary") + money("business_income") + money("other_income");

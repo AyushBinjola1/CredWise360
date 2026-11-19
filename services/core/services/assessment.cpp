@@ -1,5 +1,6 @@
 #include "services/assessment.hpp"
 #include "services/identity.hpp"
+#include "services/servicing.hpp"
 #include "engines/credit.hpp"
 #include "security/accounts.hpp"
 
@@ -19,7 +20,8 @@ int inquiryCount(Database& db, const std::string& userId, const Json& policy) {
 }
 Json compute(Database& db, const std::string& userId, const Json& profile) {
     auto policy = currentPolicy(db);
-    return CreditScoreEngine(policy).evaluate(profile,inquiryCount(db,userId,policy));
+    auto combined = FinancialProfile().adjusted(profile).withPortfolio(portfolioCommitments(db,userId));
+    return CreditScoreEngine(policy).evaluate(combined,inquiryCount(db,userId,policy));
 }
 void saveResult(Database& db, const std::string& id, const Json& result) {
     const std::string policy = result.at("policy_version").dump();

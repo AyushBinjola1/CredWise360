@@ -15,3 +15,10 @@ Use the two buttons on the sign-in screen to fill the demo credentials. **Borrow
 Review the borrower’s credit health and inspect the weighted factors. Change a financial input and view the assessment history. Use the public calculator to compare a zero-interest loan with a positive-rate loan. Inspect the final balance and the total fees as well as the monthly instalment.
 
 The [acceptance matrix](acceptance-matrix.md) describes all eight evaluation journeys and their evidence requirements. The [verification ledger](../FEATURE_STATUS.md) records the checks executed in this checkout.
+
+## Lending, planning and oversight
+
+1. As the borrower, open **Loan applications** to see the funded personal loan and the education application in underwriting. Open **My loans** for the schedule, then make a simulated EMI payment. The receipt, ledger, notification and dashboard all update.
+2. As the administrator, open **Underwriting queue**, review the education application with its synthetic documents and approve or reject it. The borrower receives a notification. Open **Fraud review** and **Portfolio reports** to see figures calculated from the same ledger.
+3. As the borrower, open **Credit score twin**, run a preset such as *Lower credit utilization* and compare factor scores. Your saved profile does not change. Then run **Stress test** (Job loss), **Debt freedom** (compare avalanche and snowball for the funded loan plus an added card) and **Education planner**. Save any scenario and reload to confirm it persists.
+4. Sign in as `diya.nair@credwise.test` to see a rejection with a recovery roadmap and reassessment path.
