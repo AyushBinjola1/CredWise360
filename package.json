@@ -1,1 +1,37 @@
-{"name":"credwise-360","private":true,"workspaces":["apps/web"],"scripts":{"dev":"npm run dev -w apps/web","build":"npm run build -w apps/web","start":"npm run start -w apps/web","seed:demo":"node scripts/seed-demo.mjs && node scripts/seed-demo-extras.mjs","test:api":"node --test --test-concurrency=1 tests/*.test.mjs","test:browser":"playwright test"},"devDependencies":{"@playwright/test":"^1.56.0"}}
+{
+  "name": "credwise-360",
+  "version": "1.0.0",
+  "description": "Responsible-lending simulation with a C++20 API, PostgreSQL and a Next.js web app.",
+  "private": true,
+  "author": "Ayush Binjola",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AyushBinjola1/CredWise360.git"
+  },
+  "homepage": "https://github.com/AyushBinjola1/CredWise360#readme",
+  "bugs": {
+    "url": "https://github.com/AyushBinjola1/CredWise360/issues"
+  },
+  "keywords": [
+    "lending",
+    "fintech",
+    "cpp",
+    "postgresql",
+    "nextjs",
+    "education"
+  ],
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w apps/web",
+    "build": "npm run build -w apps/web",
+    "start": "npm run start -w apps/web",
+    "seed:demo": "node scripts/seed-demo.mjs && node scripts/seed-demo-extras.mjs",
+    "test:api": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}

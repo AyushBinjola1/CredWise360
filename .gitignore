@@ -12,3 +12,9 @@ test-results/
 *.tsbuildinfo
 *.log
 __pycache__/
+# Editor and OS artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.tmp

@@ -7,7 +7,6 @@ flowchart LR
     H --> S[Application services]
     S --> E[Financial and policy engines]
     S --> R[libpq repository]
-    W[Background worker] --> R
     R --> P[(PostgreSQL)]
 ```
 

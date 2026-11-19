@@ -1,6 +1,6 @@
 # Editorial photographs
 
-Both photographs were generated with the built-in OpenAI image generation tool for the CredWise 360 demonstration. They depict fictional people and contain no customer data. The app serves local WebP files.
+Both photographs are AI-generated images created for the CredWise 360 demonstration. They depict fictional people and contain no customer data. The app serves local WebP files.
 
 | Public asset | Intrinsic size | Transfer size | Suggested alternative text | Crop focus |
 | --- | --- | --- | --- | --- |
